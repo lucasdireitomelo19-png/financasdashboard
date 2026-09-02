@@ -20,6 +20,7 @@ export function Categories() {
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState<Category | null>(null)
   const [spentByCategory, setSpentByCategory] = useState<Map<string, number>>(new Map())
+  const [openMenu, setOpenMenu] = useState<string | null>(null)
 
   useEffect(() => {
     if (!user) return
@@ -87,24 +88,57 @@ export function Categories() {
           const spent = spentByCategory.get(c.id) ?? 0
           const pct = budget ? Math.min(100, (spent / budget.monthly_limit) * 100) : 0
           return (
-            <div key={c.id} className="hud-panel p-3">
+            <div key={c.id} className="hud-panel relative p-3">
               <div className="flex items-center justify-between gap-2">
                 <button
                   onClick={() => {
                     setEditing(c)
                     setModalOpen(true)
                   }}
-                  className="flex flex-1 items-center gap-2 text-left"
+                  className="flex min-w-0 flex-1 items-center gap-2 text-left"
                 >
                   <span className="flex h-8 w-8 items-center justify-center rounded-full text-lg" style={{ background: `${c.color}22` }}>
                     {c.icon}
                   </span>
                   <span className="truncate text-sm text-slate-200">{c.name}</span>
                 </button>
-                <button onClick={() => handleDelete(c)} className="rounded p-1 text-slate-500 hover:text-rose-400" aria-label="Excluir">
-                  🗑️
+                <button
+                  onClick={() => setOpenMenu(openMenu === c.id ? null : c.id)}
+                  className="rounded p-1.5 text-lg leading-none text-slate-500 hover:text-cyan-300"
+                  aria-label="Mais opções"
+                  aria-expanded={openMenu === c.id}
+                >
+                  ⋮
                 </button>
               </div>
+
+              {openMenu === c.id && (
+                <>
+                  <button className="fixed inset-0 z-40 cursor-default" onClick={() => setOpenMenu(null)} aria-label="Fechar menu" />
+                  <div className="hud-panel absolute right-3 top-11 z-50 w-36 overflow-hidden !p-0">
+                    <button
+                      onClick={() => {
+                        setOpenMenu(null)
+                        setEditing(c)
+                        setModalOpen(true)
+                      }}
+                      className="flex w-full items-center gap-2 px-3 py-2.5 text-left text-sm text-slate-200 hover:bg-cyan-500/10"
+                    >
+                      ✏️ Editar
+                    </button>
+                    <button
+                      onClick={() => {
+                        setOpenMenu(null)
+                        void handleDelete(c)
+                      }}
+                      className="flex w-full items-center gap-2 px-3 py-2.5 text-left text-sm text-rose-400 hover:bg-rose-500/10"
+                    >
+                      🗑️ Excluir
+                    </button>
+                  </div>
+                </>
+              )}
+
               {budget && (
                 <div className="mt-2">
                   <div className="h-1.5 overflow-hidden rounded-full bg-[#0a1120]">

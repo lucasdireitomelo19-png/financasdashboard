@@ -76,7 +76,7 @@ export function Layout() {
       {/* nav lateral no mobile (rail fixo à esquerda, no lugar da barra inferior) */}
       <nav
         className="fixed inset-y-0 left-0 z-40 flex w-16 flex-col items-stretch gap-1 overflow-y-auto border-r border-cyan-500/20 bg-[#050810]/95 py-3 backdrop-blur-xl sm:hidden"
-        style={{ paddingLeft: 'env(safe-area-inset-left)', paddingBottom: 'env(safe-area-inset-bottom)' }}
+        style={{ paddingLeft: 'env(safe-area-inset-left)', paddingTop: 'env(safe-area-inset-top)', paddingBottom: 'env(safe-area-inset-bottom)' }}
       >
         {NAV_ITEMS.map((item) => (
           <NavLink
@@ -100,7 +100,10 @@ export function Layout() {
       </nav>
 
       {/* topo no mobile */}
-      <header className="relative z-10 flex items-center justify-between border-b border-cyan-500/15 py-3 pl-20 pr-4 sm:hidden">
+      <header
+        className="relative z-10 flex items-center justify-between border-b border-cyan-500/15 py-3 pl-20 pr-4 sm:hidden"
+        style={{ paddingTop: 'calc(0.75rem + env(safe-area-inset-top))' }}
+      >
         <div className="flex items-center gap-2">
           <ArcReactor size={24} />
           <span className="font-display text-sm font-bold uppercase tracking-[0.15em] text-cyan-100">Finanças</span>
