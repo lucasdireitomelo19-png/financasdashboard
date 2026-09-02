@@ -12,6 +12,7 @@ const NAV_ITEMS = [
   { to: '/contas', label: 'Contas', mobileLabel: 'Contas', icon: '💳', end: false },
   { to: '/investimentos', label: 'Investir', mobileLabel: 'Investir', icon: '📈', end: false },
   { to: '/categorias', label: 'Categorias', mobileLabel: 'Categ.', icon: '🏷️', end: false },
+  { to: '/agenda', label: 'Agenda', mobileLabel: 'Agenda', icon: '📅', end: false },
   { to: '/perfil', label: 'Meu perfil', mobileLabel: 'Perfil', icon: '👤', end: false },
   { to: '/configuracoes', label: 'Configurações', mobileLabel: 'Config.', icon: '⚙️', end: false },
 ]

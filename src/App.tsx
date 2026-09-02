@@ -15,6 +15,7 @@ import { Categories } from './pages/Categories'
 import { Accounts } from './pages/Accounts'
 import { Settings } from './pages/Settings'
 import { Profile } from './pages/Profile'
+import { Agenda } from './pages/Agenda'
 
 function AppRoutes() {
   const { session, loading, passwordRecovery } = useAuth()
@@ -64,6 +65,7 @@ function AppRoutes() {
         <Route path="/contas" element={<Accounts />} />
         <Route path="/investimentos" element={<Investments />} />
         <Route path="/categorias" element={<Categories />} />
+        <Route path="/agenda" element={<Agenda />} />
         <Route path="/configuracoes" element={<Settings />} />
         <Route path="/perfil" element={<Profile />} />
         <Route path="*" element={<Navigate to="/" replace />} />

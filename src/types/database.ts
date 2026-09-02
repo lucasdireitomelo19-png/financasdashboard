@@ -149,3 +149,14 @@ export interface SavingsGoalContribution {
   notes: string | null
   created_at: string
 }
+
+export interface AgendaEvent {
+  id: string
+  user_id: string
+  title: string
+  event_date: string
+  event_time: string | null
+  notes: string | null
+  done: boolean
+  created_at: string
+}

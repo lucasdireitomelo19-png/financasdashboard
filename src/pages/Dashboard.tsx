@@ -4,14 +4,16 @@ import { useAuth } from '../context/AuthContext'
 import { useCategories } from '../hooks/useCategories'
 import { useInvestments } from '../hooks/useInvestments'
 import { usePaymentAccounts } from '../hooks/usePaymentAccounts'
+import { useAgendaEvents } from '../hooks/useAgendaEvents'
 import { useRecurringSync } from '../hooks/useRecurringSync'
 import { supabase } from '../lib/supabase'
-import { formatCurrency, formatMonthLabel, monthsAgoRange } from '../lib/format'
+import { formatCurrency, formatDate, formatMonthLabel, monthsAgoRange, todayIso } from '../lib/format'
 import { CHART_COLORS } from '../lib/constants'
 import { currentCreditCardCycle, computeVrBalance, cycleRangeIso } from '../lib/accountCycles'
 import { computeInsights, type Insight } from '../lib/insights'
 import { AnimatedNumber } from '../components/AnimatedNumber'
 import { TiltCard } from '../components/TiltCard'
+import { QuickAddAgenda } from '../components/QuickAddAgenda'
 import type { Transaction } from '../types/database'
 import { Link } from 'react-router-dom'
 
@@ -35,6 +37,7 @@ export function Dashboard() {
   const { categories } = useCategories(user?.id)
   const { investments, loading: loadingInvestments } = useInvestments(user?.id)
   const { accounts } = usePaymentAccounts(user?.id)
+  const { events, create: createAgendaEvent } = useAgendaEvents(user?.id)
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [loading, setLoading] = useState(true)
   const [reloadKey, setReloadKey] = useState(0)
@@ -93,6 +96,13 @@ export function Dashboard() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [activeAccounts, transactions],
   )
+
+  const upcomingEvents = useMemo(() => {
+    const today = todayIso()
+    return events
+      .filter((e) => !e.done && e.event_date >= today)
+      .slice(0, 4)
+  }, [events])
 
   const categoryMap = useMemo(() => new Map(categories.map((c) => [c.id, c])), [categories])
 
@@ -221,6 +231,30 @@ export function Dashboard() {
               </TiltCard>
             ))}
           </div>
+        </div>
+      )}
+
+      <QuickAddAgenda onCreate={createAgendaEvent} />
+
+      {upcomingEvents.length > 0 && (
+        <div className="hud-panel p-4">
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="font-display text-xs font-semibold uppercase tracking-wider text-cyan-300/70">Próximos compromissos</h2>
+            <Link to="/agenda" className="font-display text-[11px] uppercase tracking-wide text-cyan-400 hover:underline">
+              Ver agenda
+            </Link>
+          </div>
+          <ul className="divide-y divide-cyan-500/10">
+            {upcomingEvents.map((e) => (
+              <li key={e.id} className="flex items-center justify-between gap-2 py-2">
+                <span className="min-w-0 truncate text-sm text-slate-200">{e.title}</span>
+                <span className="shrink-0 text-xs text-slate-500">
+                  {formatDate(e.event_date)}
+                  {e.event_time ? ` · ${e.event_time.slice(0, 5)}` : ''}
+                </span>
+              </li>
+            ))}
+          </ul>
         </div>
       )}
 

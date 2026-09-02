@@ -407,6 +407,41 @@ drop policy if exists "savings_contrib_delete_own" on public.savings_goal_contri
 create policy "savings_contrib_delete_own" on public.savings_goal_contributions
   for delete using (auth.uid() = user_id);
 
+-- ----------------------------------------------------------------------------
+-- agenda_events: compromissos/lembretes da agenda. event_time é opcional
+-- (evento o dia inteiro quando não informado).
+-- ----------------------------------------------------------------------------
+create table if not exists public.agenda_events (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  title text not null,
+  event_date date not null,
+  event_time time,
+  notes text,
+  done boolean not null default false,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists agenda_events_user_date_idx on public.agenda_events (user_id, event_date, event_time);
+
+alter table public.agenda_events enable row level security;
+
+drop policy if exists "agenda_events_select_own" on public.agenda_events;
+create policy "agenda_events_select_own" on public.agenda_events
+  for select using (auth.uid() = user_id);
+
+drop policy if exists "agenda_events_insert_own" on public.agenda_events;
+create policy "agenda_events_insert_own" on public.agenda_events
+  for insert with check (auth.uid() = user_id);
+
+drop policy if exists "agenda_events_update_own" on public.agenda_events;
+create policy "agenda_events_update_own" on public.agenda_events
+  for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+drop policy if exists "agenda_events_delete_own" on public.agenda_events;
+create policy "agenda_events_delete_own" on public.agenda_events
+  for delete using (auth.uid() = user_id);
+
 -- ============================================================================
 -- Fim do schema.
 -- ============================================================================
