@@ -6,6 +6,7 @@ import { Modal } from '../components/Modal'
 import { InvestmentForm, type InvestmentFormValues } from '../components/InvestmentForm'
 import { MovementForm, type MovementFormValues } from '../components/MovementForm'
 import { formatCurrency, formatDate } from '../lib/format'
+import { triggerSaveFeedback } from '../lib/feedback'
 import { INVESTMENT_CATEGORY_COLORS, INVESTMENT_CATEGORY_LABELS, INVESTMENT_MOVEMENT_LABELS } from '../lib/constants'
 import { AnimatedNumber } from '../components/AnimatedNumber'
 import { TiltCard } from '../components/TiltCard'
@@ -62,7 +63,10 @@ export function Investments() {
         date_invested: values.date_invested,
         notes: values.notes || null,
       })
-      if (!result.error) setFormModal('closed')
+      if (!result.error) {
+        setFormModal('closed')
+        triggerSaveFeedback()
+      }
       return result
     }
 
@@ -80,6 +84,7 @@ export function Investments() {
       await addMovement({ investment_id: result.id, type: 'aporte', amount: Number(values.initialAmount), date: values.date_invested, notes: null })
     }
     setFormModal('closed')
+    triggerSaveFeedback()
     return { error: null }
   }
 
@@ -97,7 +102,10 @@ export function Investments() {
       date: values.date,
       notes: values.notes || null,
     })
-    if (!result.error) setMovementTarget(null)
+    if (!result.error) {
+      setMovementTarget(null)
+      triggerSaveFeedback()
+    }
     return result
   }
 

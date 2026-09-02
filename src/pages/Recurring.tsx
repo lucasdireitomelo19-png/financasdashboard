@@ -7,6 +7,7 @@ import { Modal } from '../components/Modal'
 import { RecurringForm, type RecurringFormValues } from '../components/RecurringForm'
 import { formatCurrency, formatDate, todayIso } from '../lib/format'
 import { nextOccurrenceAfter } from '../lib/recurrence'
+import { triggerSaveFeedback } from '../lib/feedback'
 import { AnimatedNumber } from '../components/AnimatedNumber'
 import { TiltCard } from '../components/TiltCard'
 import type { RecurringTemplate } from '../types/database'
@@ -61,7 +62,10 @@ export function Recurring() {
       active: values.active,
     }
     const result = editing ? await update(editing.id, payload) : await create(payload)
-    if (!result.error) setModalOpen(false)
+    if (!result.error) {
+      setModalOpen(false)
+      triggerSaveFeedback()
+    }
     return result
   }
 

@@ -5,6 +5,7 @@ import { SavingsGoalForm, type SavingsGoalFormValues } from './SavingsGoalForm'
 import { GoalContributionForm, type ContributionFormValues } from './GoalContributionForm'
 import { AnimatedNumber } from './AnimatedNumber'
 import { formatCurrency, formatDate } from '../lib/format'
+import { triggerSaveFeedback } from '../lib/feedback'
 import type { SavingsGoal } from '../types/database'
 
 export function SavingsGoals({ userId }: { userId: string | undefined }) {
@@ -29,7 +30,10 @@ export function SavingsGoals({ userId }: { userId: string | undefined }) {
       archived: false,
     }
     const result = editing ? await update(editing.id, payload) : await create(payload)
-    if (!result.error) setFormOpen(false)
+    if (!result.error) {
+      setFormOpen(false)
+      triggerSaveFeedback()
+    }
     return result
   }
 
@@ -42,7 +46,10 @@ export function SavingsGoals({ userId }: { userId: string | undefined }) {
     if (!contribTarget) return { error: 'Selecione uma meta' }
     const amount = values.direction === 'retirada' ? -Number(values.amount) : Number(values.amount)
     const result = await addContribution({ goal_id: contribTarget.id, amount, date: values.date, notes: null })
-    if (!result.error) setContribTarget(null)
+    if (!result.error) {
+      setContribTarget(null)
+      triggerSaveFeedback()
+    }
     return result
   }
 

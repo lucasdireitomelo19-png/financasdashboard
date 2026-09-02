@@ -1,7 +1,9 @@
+import { useEffect, useRef, useState } from 'react'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import { Layout } from './components/Layout'
 import { LoadingReactor } from './components/LoadingReactor'
+import { BootSequence } from './components/BootSequence'
 import { Login } from './pages/Login'
 import { ResetPassword } from './pages/ResetPassword'
 import { Dashboard } from './pages/Dashboard'
@@ -13,6 +15,15 @@ import { Accounts } from './pages/Accounts'
 
 function AppRoutes() {
   const { session, loading, passwordRecovery } = useAuth()
+  const [booted, setBooted] = useState(false)
+  const bootedForUser = useRef<string | null>(null)
+
+  useEffect(() => {
+    if (session && bootedForUser.current !== session.user.id) {
+      bootedForUser.current = session.user.id
+      setBooted(false)
+    }
+  }, [session])
 
   if (loading) {
     return <LoadingReactor />
@@ -35,6 +46,10 @@ function AppRoutes() {
         <Route path="*" element={<Login />} />
       </Routes>
     )
+  }
+
+  if (!booted) {
+    return <BootSequence onDone={() => setBooted(true)} />
   }
 
   return (

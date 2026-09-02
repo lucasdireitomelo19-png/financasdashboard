@@ -6,6 +6,7 @@ import { supabase } from '../lib/supabase'
 import { Modal } from '../components/Modal'
 import { ErrorText, FormField, PrimaryButton, TextInput } from '../components/FormField'
 import { formatCurrency, currentMonthRange } from '../lib/format'
+import { triggerSaveFeedback } from '../lib/feedback'
 import type { Category, TransactionType } from '../types/database'
 
 const ICON_OPTIONS = ['💰', '🏠', '🛒', '🚗', '🍔', '💊', '📚', '🎮', '📺', '🛍️', '💡', '💇', '🐾', '✈️', '🧾', '📦', '💼', '💻', '🎁', '🏷️', '↩️', '📈', '⚡', '🎵', '☕']
@@ -140,6 +141,7 @@ export function Categories() {
               }
 
               setModalOpen(false)
+              triggerSaveFeedback()
               return result
             }}
           />

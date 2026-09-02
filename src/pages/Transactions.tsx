@@ -10,6 +10,7 @@ import { TransactionForm, type TransactionFormValues } from '../components/Trans
 import { formatCurrency, currentMonthRange } from '../lib/format'
 import { PAYMENT_METHOD_LABELS } from '../lib/constants'
 import { buildInstallmentRows } from '../lib/installments'
+import { triggerSaveFeedback } from '../lib/feedback'
 import { AnimatedNumber } from '../components/AnimatedNumber'
 import { TiltCard } from '../components/TiltCard'
 import type { Transaction, TransactionType } from '../types/database'
@@ -98,7 +99,10 @@ export function Transactions() {
         account_id: values.account_id || null,
       })
       const result = await createMany(rows)
-      if (!result.error) setModalOpen(false)
+      if (!result.error) {
+        setModalOpen(false)
+        triggerSaveFeedback()
+      }
       return result
     }
 
@@ -118,7 +122,10 @@ export function Transactions() {
       notes: values.notes || null,
     }
     const result = editing ? await update(editing.id, payload) : await create(payload)
-    if (!result.error) setModalOpen(false)
+    if (!result.error) {
+      setModalOpen(false)
+      triggerSaveFeedback()
+    }
     return result
   }
 

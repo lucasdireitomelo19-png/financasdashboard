@@ -8,6 +8,7 @@ import { Modal } from '../components/Modal'
 import { AccountForm, type AccountFormValues } from '../components/AccountForm'
 import { currentCreditCardCycle, previousCreditCardCycles, currentVrCycle, cycleRangeIso, dateToIso, type CreditCardCycle, type VrCycle } from '../lib/accountCycles'
 import { formatCurrency, formatDate, monthsAgoRange } from '../lib/format'
+import { triggerSaveFeedback } from '../lib/feedback'
 import { AnimatedNumber } from '../components/AnimatedNumber'
 import type { PaymentAccount, Transaction } from '../types/database'
 
@@ -55,7 +56,10 @@ export function Accounts() {
       archived: false,
     }
     const result = editing ? await update(editing.id, payload) : await create(payload)
-    if (!result.error) setFormOpen(false)
+    if (!result.error) {
+      setFormOpen(false)
+      triggerSaveFeedback()
+    }
     return result
   }
 
