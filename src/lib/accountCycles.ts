@@ -85,13 +85,17 @@ export function dateToIso(d: Date): string {
   return toIso(d)
 }
 
+/** Quanto já foi gasto numa conta tipo "vale" desde o último crédito (ciclo atual). */
+export function computeVrSpent(account: PaymentAccount, transactions: Transaction[], today = new Date()): number {
+  const cycle = currentVrCycle(account, today)
+  const { start, end } = cycleRangeIso(cycle)
+  return transactions
+    .filter((t) => t.account_id === account.id && t.type === 'expense' && t.date >= start && t.date <= end)
+    .reduce((s, t) => s + Number(t.amount), 0)
+}
+
 /** Saldo disponível de uma conta tipo "vale" no ciclo atual (crédito mensal
  * menos o que já foi gasto nela desde o último crédito). */
 export function computeVrBalance(account: PaymentAccount, transactions: Transaction[], today = new Date()): number {
-  const cycle = currentVrCycle(account, today)
-  const { start, end } = cycleRangeIso(cycle)
-  const spent = transactions
-    .filter((t) => t.account_id === account.id && t.type === 'expense' && t.date >= start && t.date <= end)
-    .reduce((s, t) => s + Number(t.amount), 0)
-  return Number(account.monthly_credit ?? 0) - spent
+  return Number(account.monthly_credit ?? 0) - computeVrSpent(account, transactions, today)
 }
