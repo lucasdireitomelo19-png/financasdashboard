@@ -6,7 +6,7 @@ import { useInvestments } from '../hooks/useInvestments'
 import { usePaymentAccounts } from '../hooks/usePaymentAccounts'
 import { useRecurringSync } from '../hooks/useRecurringSync'
 import { supabase } from '../lib/supabase'
-import { formatCurrency, formatMonthLabel, monthsAgoRange, todayIso } from '../lib/format'
+import { formatCurrency, formatMonthLabel, monthsAgoRange } from '../lib/format'
 import { CHART_COLORS } from '../lib/constants'
 import { currentCreditCardCycle, computeVrBalance, cycleRangeIso } from '../lib/accountCycles'
 import { computeInsights, type Insight } from '../lib/insights'
@@ -35,7 +35,6 @@ export function Dashboard() {
   const { investments, loading: loadingInvestments } = useInvestments(user?.id)
   const { accounts } = usePaymentAccounts(user?.id)
   const [transactions, setTransactions] = useState<Transaction[]>([])
-  const [futureInstallmentsTotal, setFutureInstallmentsTotal] = useState(0)
   const [loading, setLoading] = useState(true)
   const [reloadKey, setReloadKey] = useState(0)
 
@@ -55,17 +54,6 @@ export function Dashboard() {
         setTransactions(data ?? [])
         setLoading(false)
       })
-
-    supabase
-      .from('transactions')
-      .select('amount')
-      .eq('user_id', user.id)
-      .eq('type', 'expense')
-      .not('installment_group_id', 'is', null)
-      .gt('date', todayIso())
-      .then(({ data }) => {
-        setFutureInstallmentsTotal((data ?? []).reduce((s, row) => s + Number(row.amount), 0))
-      })
   }, [user, reloadKey])
 
   const now = new Date()
@@ -81,7 +69,7 @@ export function Dashboard() {
   const balance = income - expense
 
   const totalInvested = investments.reduce((s, i) => s + i.currentValue, 0)
-  const netWorth = totalInvested - futureInstallmentsTotal
+  const netWorth = totalInvested
 
   const activeAccounts = useMemo(() => accounts.filter((a) => !a.archived), [accounts])
   const accountBalances = useMemo(
@@ -170,9 +158,7 @@ export function Dashboard() {
           <p className="glow-text mt-1 font-display text-3xl font-bold text-cyan-100">
             {loading || loadingInvestments ? '···' : <AnimatedNumber value={netWorth} format={formatCurrency} />}
           </p>
-          <p className="mt-1 text-xs text-slate-500">
-            investimentos ({formatCurrency(totalInvested)}) − parcelas futuras comprometidas ({formatCurrency(futureInstallmentsTotal)})
-          </p>
+          <p className="mt-1 text-xs text-slate-500">Soma de todos os seus investimentos</p>
 
           {avgMonthlySavings !== 0 && (
             <div className="mt-4 border-t border-cyan-500/15 pt-4">
