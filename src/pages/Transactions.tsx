@@ -25,6 +25,7 @@ export function Transactions() {
   const [filters, setFilters] = useState<TransactionFilters>({
     type: 'all',
     categoryId: 'all',
+    accountId: 'all',
     paymentMethod: 'all',
     startDate: defaultRange.start,
     endDate: defaultRange.end,
@@ -144,7 +145,7 @@ export function Transactions() {
   }
 
   const clearFilters = () =>
-    setFilters({ type: 'all', categoryId: 'all', paymentMethod: 'all', startDate: '', endDate: '', search: '', variableOnly: false })
+    setFilters({ type: 'all', categoryId: 'all', accountId: 'all', paymentMethod: 'all', startDate: '', endDate: '', search: '', variableOnly: false })
 
   return (
     <div className="space-y-4">
@@ -174,6 +175,15 @@ export function Transactions() {
             {categories.map((c) => (
               <option key={c.id} value={c.id}>
                 {c.icon} {c.name}
+              </option>
+            ))}
+          </Select>
+
+          <Select value={filters.accountId} onChange={(e) => setFilters((f) => ({ ...f, accountId: e.target.value }))}>
+            <option value="all">Todas contas</option>
+            {accounts.map((a) => (
+              <option key={a.id} value={a.id}>
+                {a.icon} {a.name}
               </option>
             ))}
           </Select>
@@ -223,16 +233,26 @@ export function Transactions() {
                 <ul className="divide-y divide-cyan-500/10">
                   {items.map((t) => {
                     const cat = t.category_id ? categoryMap.get(t.category_id) : null
+                    const account = t.account_id ? accountMap.get(t.account_id) : null
                     return (
                       <li key={t.id} className="flex items-center justify-between gap-2 py-2.5">
                         <button onClick={() => openEdit(t)} className="flex flex-1 items-center gap-3 text-left">
                           <span className="text-xl">{cat?.icon ?? '💸'}</span>
                           <div className="min-w-0">
-                            <p className="truncate text-sm font-medium text-slate-200">{t.description || cat?.name || 'Sem descrição'}</p>
+                            <div className="flex items-center gap-1.5">
+                              <p className="truncate text-sm font-medium text-slate-200">{t.description || cat?.name || 'Sem descrição'}</p>
+                              {account && (
+                                <span
+                                  className="inline-flex shrink-0 items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px] font-semibold"
+                                  style={{ background: `${account.color}26`, color: account.color, boxShadow: `0 0 6px -2px ${account.color}` }}
+                                >
+                                  {account.icon} {account.name}
+                                </span>
+                              )}
+                            </div>
                             <p className="truncate text-xs text-slate-500">
                               {cat?.name ?? 'Sem categoria'}
                               {t.payment_method ? ` · ${PAYMENT_METHOD_LABELS[t.payment_method]}` : ''}
-                              {t.account_id && accountMap.get(t.account_id) ? ` · ${accountMap.get(t.account_id)!.name}` : ''}
                               {t.is_variable ? ' · variável' : ''}
                               {t.recurring_template_id ? ' · recorrente' : ''}
                               {t.installment_group_id ? ` · parcela ${t.installment_number}/${t.installment_total}` : ''}

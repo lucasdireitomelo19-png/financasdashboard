@@ -5,6 +5,7 @@ import type { Transaction, TransactionType } from '../types/database'
 export interface TransactionFilters {
   type?: TransactionType | 'all'
   categoryId?: string | 'all'
+  accountId?: string | 'all'
   startDate?: string
   endDate?: string
   paymentMethod?: string | 'all'
@@ -23,6 +24,7 @@ export function useTransactions(userId: string | undefined, filters: Transaction
 
     if (filters.type && filters.type !== 'all') query = query.eq('type', filters.type)
     if (filters.categoryId && filters.categoryId !== 'all') query = query.eq('category_id', filters.categoryId)
+    if (filters.accountId && filters.accountId !== 'all') query = query.eq('account_id', filters.accountId)
     if (filters.startDate) query = query.gte('date', filters.startDate)
     if (filters.endDate) query = query.lte('date', filters.endDate)
     if (filters.paymentMethod && filters.paymentMethod !== 'all') query = query.eq('payment_method', filters.paymentMethod)
@@ -32,7 +34,7 @@ export function useTransactions(userId: string | undefined, filters: Transaction
     const { data } = await query.limit(1000)
     setTransactions(data ?? [])
     setLoading(false)
-  }, [userId, filters.type, filters.categoryId, filters.startDate, filters.endDate, filters.paymentMethod, filters.variableOnly, filters.search])
+  }, [userId, filters.type, filters.categoryId, filters.accountId, filters.startDate, filters.endDate, filters.paymentMethod, filters.variableOnly, filters.search])
 
   useEffect(() => {
     void refetch()
