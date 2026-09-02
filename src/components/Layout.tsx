@@ -73,35 +73,9 @@ export function Layout() {
         </div>
       </aside>
 
-      {/* nav lateral no mobile (rail fixo à esquerda, no lugar da barra inferior) */}
-      <nav
-        className="fixed inset-y-0 left-0 z-40 flex w-16 flex-col items-stretch gap-1 overflow-y-auto border-r border-cyan-500/20 bg-[#050810]/95 py-3 backdrop-blur-xl sm:hidden"
-        style={{ paddingLeft: 'env(safe-area-inset-left)', paddingTop: 'env(safe-area-inset-top)', paddingBottom: 'env(safe-area-inset-bottom)' }}
-      >
-        {NAV_ITEMS.map((item) => (
-          <NavLink
-            key={item.to}
-            to={item.to}
-            end={item.end}
-            className={({ isActive }) =>
-              `flex shrink-0 flex-col items-center gap-0.5 px-1 py-2 font-display text-[8.5px] font-medium uppercase tracking-tight transition-colors ${
-                isActive ? 'text-cyan-300' : 'text-slate-600'
-              }`
-            }
-          >
-            {({ isActive }) => (
-              <>
-                <span className={`text-lg transition-transform ${isActive ? 'scale-110 drop-shadow-[0_0_6px_color-mix(in_srgb,var(--color-accent)_90%,transparent)]' : ''}`}>{item.icon}</span>
-                <span className="max-w-full truncate">{item.mobileLabel}</span>
-              </>
-            )}
-          </NavLink>
-        ))}
-      </nav>
-
       {/* topo no mobile */}
       <header
-        className="relative z-10 flex items-center justify-between border-b border-cyan-500/15 py-3 pl-20 pr-4 sm:hidden"
+        className="relative z-10 flex items-center justify-between border-b border-cyan-500/15 px-4 py-3 sm:hidden"
         style={{ paddingTop: 'calc(0.75rem + env(safe-area-inset-top))' }}
       >
         <div className="flex items-center gap-2">
@@ -116,7 +90,7 @@ export function Layout() {
         </div>
       </header>
 
-      <main className="relative z-10 flex-1 overflow-x-hidden py-4 pl-20 pr-4 sm:px-6 sm:py-6">
+      <main className="relative z-10 flex-1 overflow-x-hidden px-4 pb-24 pt-4 sm:px-6 sm:pb-8 sm:pt-6">
         <Outlet />
       </main>
 
@@ -124,11 +98,37 @@ export function Layout() {
       <button
         onClick={() => window.dispatchEvent(new Event('open-command-palette'))}
         className="fixed right-4 z-40 flex h-12 w-12 items-center justify-center rounded-full border border-cyan-400/40 bg-cyan-500/20 text-xl shadow-[0_0_20px_-2px_color-mix(in_srgb,var(--color-accent)_70%,transparent)] backdrop-blur-xl sm:hidden"
-        style={{ bottom: 'calc(1rem + env(safe-area-inset-bottom))' }}
+        style={{ bottom: 'calc(4.75rem + env(safe-area-inset-bottom))' }}
         aria-label="Buscar / comandos"
       >
         🔎
       </button>
+
+      {/* nav inferior no mobile */}
+      <nav
+        className="fixed inset-x-0 bottom-0 z-40 flex border-t border-cyan-500/20 bg-[#050810]/95 backdrop-blur-xl sm:hidden"
+        style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+      >
+        {NAV_ITEMS.map((item) => (
+          <NavLink
+            key={item.to}
+            to={item.to}
+            end={item.end}
+            className={({ isActive }) =>
+              `flex min-w-0 flex-1 flex-col items-center gap-0.5 px-0.5 py-2 font-display text-[8px] font-medium uppercase tracking-tight transition-colors ${
+                isActive ? 'text-cyan-300' : 'text-slate-600'
+              }`
+            }
+          >
+            {({ isActive }) => (
+              <>
+                <span className={`text-base transition-transform ${isActive ? 'scale-110 drop-shadow-[0_0_6px_color-mix(in_srgb,var(--color-accent)_90%,transparent)]' : ''}`}>{item.icon}</span>
+                <span className="max-w-full truncate">{item.mobileLabel}</span>
+              </>
+            )}
+          </NavLink>
+        ))}
+      </nav>
     </div>
   )
 }
