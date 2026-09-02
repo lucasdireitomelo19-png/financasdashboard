@@ -192,6 +192,37 @@ drop policy if exists "investment_movements_delete_own" on public.investment_mov
 create policy "investment_movements_delete_own" on public.investment_movements
   for delete using (auth.uid() = user_id);
 
+-- ----------------------------------------------------------------------------
+-- investor_profiles: resultado do questionário de perfil de investidor
+-- (uma linha por usuário). Usado só para sugerir uma alocação-alvo
+-- educacional — não é recomendação de investimento individualizada.
+-- ----------------------------------------------------------------------------
+create table if not exists public.investor_profiles (
+  user_id uuid primary key references auth.users(id) on delete cascade,
+  risk_profile text not null check (risk_profile in ('conservador', 'moderado', 'arrojado')),
+  score int not null,
+  answers jsonb,
+  updated_at timestamptz not null default now()
+);
+
+alter table public.investor_profiles enable row level security;
+
+drop policy if exists "investor_profiles_select_own" on public.investor_profiles;
+create policy "investor_profiles_select_own" on public.investor_profiles
+  for select using (auth.uid() = user_id);
+
+drop policy if exists "investor_profiles_insert_own" on public.investor_profiles;
+create policy "investor_profiles_insert_own" on public.investor_profiles
+  for insert with check (auth.uid() = user_id);
+
+drop policy if exists "investor_profiles_update_own" on public.investor_profiles;
+create policy "investor_profiles_update_own" on public.investor_profiles
+  for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+drop policy if exists "investor_profiles_delete_own" on public.investor_profiles;
+create policy "investor_profiles_delete_own" on public.investor_profiles
+  for delete using (auth.uid() = user_id);
+
 -- ============================================================================
 -- Fim do schema.
 -- ============================================================================

@@ -102,6 +102,13 @@ janela própria, sem as abas do navegador.
 - **Investimentos**: cadastre cada posição (renda fixa, ações, fundos, FIIs,
   cripto, previdência, etc.), registre aportes, resgates, rendimentos e
   ajustes de valor, e acompanhe o ganho (R$ e %) e a alocação da carteira.
+- **Recomendações**: um mini-quiz define seu perfil de investidor
+  (conservador/moderado/arrojado) e compara sua alocação atual com uma
+  alocação-alvo sugerida (gráfico radar), além de um diagnóstico financeiro
+  automático (reserva de emergência, taxa de poupança, concentração da
+  carteira, gastos fixos vs. renda) gerado por regras a partir dos seus
+  próprios dados. É conteúdo educacional, não uma recomendação de
+  investimento individualizada.
 - **Dashboard**: saldo do mês, entradas x saídas, gastos por categoria e
   evolução dos últimos 6 meses.
 - **Sincronizado**: como os dados ficam no Supabase (nuvem), tudo que você
@@ -128,6 +135,13 @@ Resumo das tabelas:
 - `investments` — cada investimento/posição da carteira
 - `investment_movements` — aportes, resgates, rendimentos e ajustes de cada
   investimento
+- `investor_profiles` — resultado do quiz de perfil de investidor (uma linha
+  por usuário)
 
 Todas as tabelas têm Row Level Security (RLS) habilitado: cada usuário só
 consegue ler e escrever seus próprios dados.
+
+> **Já tem o projeto configurado e só quer pegar a tabela nova?** Basta
+> rodar o `supabase/schema.sql` de novo no SQL Editor — ele usa
+> `create table if not exists` e `drop policy if exists`/`create policy` em
+> tudo, então é seguro rodar por cima do que já existe sem perder dados.

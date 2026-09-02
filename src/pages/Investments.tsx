@@ -9,12 +9,14 @@ import { formatCurrency, formatDate } from '../lib/format'
 import { INVESTMENT_CATEGORY_COLORS, INVESTMENT_CATEGORY_LABELS, INVESTMENT_MOVEMENT_LABELS } from '../lib/constants'
 import { AnimatedNumber } from '../components/AnimatedNumber'
 import { TiltCard } from '../components/TiltCard'
+import { Recommendations } from '../components/Recommendations'
 import type { Investment } from '../types/database'
 
 export function Investments() {
   const { user } = useAuth()
   const { investments, movementsFor, create, update, remove, addMovement, removeMovement } = useInvestments(user?.id)
 
+  const [tab, setTab] = useState<'carteira' | 'recomendacoes'>('carteira')
   const [formModal, setFormModal] = useState<'closed' | 'create' | 'edit'>('closed')
   const [editing, setEditing] = useState<Investment | null>(null)
   const [movementTarget, setMovementTarget] = useState<InvestmentWithTotals | null>(null)
@@ -102,11 +104,36 @@ export function Investments() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="font-display text-lg font-bold uppercase tracking-wider text-cyan-100">Investimentos</h1>
-        <button onClick={openCreate} className="rounded-lg bg-gradient-to-r from-cyan-500 to-cyan-400 px-4 py-2 font-display text-xs font-bold uppercase tracking-wider text-[#031018] shadow-[0_0_20px_-4px_rgba(34,224,255,0.8)] transition hover:from-cyan-400 hover:to-cyan-300">
-          + Novo
+        {tab === 'carteira' && (
+          <button onClick={openCreate} className="rounded-lg bg-gradient-to-r from-cyan-500 to-cyan-400 px-4 py-2 font-display text-xs font-bold uppercase tracking-wider text-[#031018] shadow-[0_0_20px_-4px_rgba(34,224,255,0.8)] transition hover:from-cyan-400 hover:to-cyan-300">
+            + Novo
+          </button>
+        )}
+      </div>
+
+      <div className="grid grid-cols-2 gap-2">
+        <button
+          onClick={() => setTab('carteira')}
+          className={`rounded-lg border px-3 py-2.5 font-display text-xs font-semibold uppercase tracking-wider transition ${
+            tab === 'carteira' ? 'border-cyan-400/50 bg-cyan-400/10 text-cyan-200 shadow-[0_0_16px_-6px_rgba(34,224,255,0.7)]' : 'border-cyan-500/20 text-slate-400'
+          }`}
+        >
+          📊 Carteira
+        </button>
+        <button
+          onClick={() => setTab('recomendacoes')}
+          className={`rounded-lg border px-3 py-2.5 font-display text-xs font-semibold uppercase tracking-wider transition ${
+            tab === 'recomendacoes' ? 'border-cyan-400/50 bg-cyan-400/10 text-cyan-200 shadow-[0_0_16px_-6px_rgba(34,224,255,0.7)]' : 'border-cyan-500/20 text-slate-400'
+          }`}
+        >
+          🧭 Recomendações
         </button>
       </div>
 
+      {tab === 'recomendacoes' && <Recommendations userId={user?.id} investments={investments} />}
+
+      {tab === 'carteira' && (
+        <>
       <div className="grid grid-cols-3 gap-3">
         <MiniStat label="Investido" value={totals.invested} color="text-slate-200" />
         <MiniStat label="Patrimônio atual" value={totals.current} color="text-cyan-300" />
@@ -219,6 +246,8 @@ export function Investments() {
           })
         )}
       </div>
+        </>
+      )}
 
       {formModal !== 'closed' && (
         <Modal title={editing ? 'Editar investimento' : 'Novo investimento'} onClose={() => setFormModal('closed')}>

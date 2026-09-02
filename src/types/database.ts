@@ -12,6 +12,7 @@ export type InvestmentCategory =
   | 'outros'
 export type InvestmentMovementType = 'aporte' | 'resgate' | 'rendimento' | 'ajuste'
 export type PaymentMethod = 'dinheiro' | 'debito' | 'credito' | 'pix' | 'transferencia' | 'boleto' | 'outro'
+export type RiskProfile = 'conservador' | 'moderado' | 'arrojado'
 
 export interface Category {
   id: string
@@ -78,4 +79,12 @@ export interface InvestmentMovement {
   date: string
   notes: string | null
   created_at: string
+}
+
+export interface InvestorProfile {
+  user_id: string
+  risk_profile: RiskProfile
+  score: number
+  answers: Record<string, number> | null
+  updated_at: string
 }
