@@ -17,6 +17,11 @@
 
 html {
   color-scheme: dark;
+  /* evita que o Safari mobile aumente sozinho o tamanho do texto em colunas
+     estreitas (ex: o rail de navegação lateral) — sem isso os ícones/labels
+     ficam desproporcionalmente grandes em iPhone. */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 /* ---------------------------------------------------------------------- */

@@ -84,7 +84,7 @@ export function Layout() {
             to={item.to}
             end={item.end}
             className={({ isActive }) =>
-              `flex flex-col items-center gap-0.5 px-1 py-2 font-display text-[8.5px] font-medium uppercase tracking-tight transition-colors ${
+              `flex shrink-0 flex-col items-center gap-0.5 px-1 py-2 font-display text-[8.5px] font-medium uppercase tracking-tight transition-colors ${
                 isActive ? 'text-cyan-300' : 'text-slate-600'
               }`
             }
