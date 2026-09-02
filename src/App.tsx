@@ -22,8 +22,12 @@ function AppRoutes() {
   const [booted, setBooted] = useState(false)
   const bootedForUser = useRef<string | null>(null)
 
+  console.log('[BOOT DEBUG] AppRoutes render — loading=', loading, 'session?', !!session, 'userId=', session?.user?.id, 'booted=', booted)
+
   useEffect(() => {
+    console.log('[BOOT DEBUG] session-effect ran — session?', !!session, 'userId=', session?.user?.id, 'bootedForUser.current=', bootedForUser.current)
     if (session && bootedForUser.current !== session.user.id) {
+      console.log('[BOOT DEBUG] session-effect calling setBooted(false)')
       bootedForUser.current = session.user.id
       setBooted(false)
     }
