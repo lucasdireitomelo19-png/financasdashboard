@@ -18,10 +18,10 @@ export interface TransactionFormValues {
   notes: string
 }
 
-function toValues(t?: Transaction | null): TransactionFormValues {
+function toValues(t?: Transaction | null, initialType?: TransactionType): TransactionFormValues {
   if (!t) {
     return {
-      type: 'expense',
+      type: initialType ?? 'expense',
       amount: '',
       category_id: '',
       description: '',
@@ -51,18 +51,20 @@ function toValues(t?: Transaction | null): TransactionFormValues {
 
 export function TransactionForm({
   initial,
+  initialType,
   categories,
   accounts,
   onCancel,
   onSubmit,
 }: {
   initial?: Transaction | null
+  initialType?: TransactionType
   categories: Category[]
   accounts: PaymentAccount[]
   onCancel: () => void
   onSubmit: (values: TransactionFormValues) => Promise<{ error: string | null }>
 }) {
-  const [values, setValues] = useState<TransactionFormValues>(toValues(initial))
+  const [values, setValues] = useState<TransactionFormValues>(toValues(initial, initialType))
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
 

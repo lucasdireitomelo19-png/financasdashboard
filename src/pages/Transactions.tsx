@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useCategories } from '../hooks/useCategories'
 import { usePaymentAccounts } from '../hooks/usePaymentAccounts'
@@ -11,7 +12,7 @@ import { PAYMENT_METHOD_LABELS } from '../lib/constants'
 import { buildInstallmentRows } from '../lib/installments'
 import { AnimatedNumber } from '../components/AnimatedNumber'
 import { TiltCard } from '../components/TiltCard'
-import type { Transaction } from '../types/database'
+import type { Transaction, TransactionType } from '../types/database'
 
 const defaultRange = currentMonthRange()
 
@@ -19,19 +20,42 @@ export function Transactions() {
   const { user } = useAuth()
   const { categories } = useCategories(user?.id)
   const { accounts } = usePaymentAccounts(user?.id)
+  const [searchParams, setSearchParams] = useSearchParams()
   const [filters, setFilters] = useState<TransactionFilters>({
     type: 'all',
     categoryId: 'all',
     paymentMethod: 'all',
     startDate: defaultRange.start,
     endDate: defaultRange.end,
-    search: '',
+    search: searchParams.get('q') ?? '',
     variableOnly: false,
   })
   const { transactions, loading, create, createMany, update, remove, removeInstallmentGroup } = useTransactions(user?.id, filters)
 
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState<Transaction | null>(null)
+  const [quickType, setQuickType] = useState<TransactionType | undefined>()
+
+  // vindo da barra de comando (⌘K): abre direto o formulário de novo
+  // gasto/entrada, ou já preenche a busca
+  useEffect(() => {
+    const newType = searchParams.get('new')
+    if (newType === 'expense' || newType === 'income') {
+      setQuickType(newType)
+      setEditing(null)
+      setModalOpen(true)
+      setSearchParams((p) => {
+        p.delete('new')
+        return p
+      })
+    } else if (searchParams.get('q')) {
+      setSearchParams((p) => {
+        p.delete('q')
+        return p
+      })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const categoryMap = useMemo(() => new Map(categories.map((c) => [c.id, c])), [categories])
   const accountMap = useMemo(() => new Map(accounts.map((a) => [a.id, a])), [accounts])
@@ -53,6 +77,7 @@ export function Transactions() {
 
   const openCreate = () => {
     setEditing(null)
+    setQuickType(undefined)
     setModalOpen(true)
   }
 
@@ -227,7 +252,14 @@ export function Transactions() {
 
       {modalOpen && (
         <Modal title={editing ? 'Editar lançamento' : 'Novo lançamento'} onClose={() => setModalOpen(false)}>
-          <TransactionForm initial={editing} categories={categories} accounts={accounts.filter((a) => !a.archived)} onCancel={() => setModalOpen(false)} onSubmit={handleSubmit} />
+          <TransactionForm
+            initial={editing}
+            initialType={quickType}
+            categories={categories}
+            accounts={accounts.filter((a) => !a.archived)}
+            onCancel={() => setModalOpen(false)}
+            onSubmit={handleSubmit}
+          />
         </Modal>
       )}
     </div>

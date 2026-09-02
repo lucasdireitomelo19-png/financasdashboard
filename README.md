@@ -132,6 +132,13 @@ janela própria, sem as abas do navegador.
   sua taxa de poupança real, saldo do mês, entradas x saídas, gastos por
   categoria e evolução dos últimos 6 meses.
 - **Recuperar senha**: fluxo completo de "esqueci minha senha" por e-mail.
+- **Notificações**: sino no topo com alertas calculados a partir dos seus
+  dados — fatura perto de fechar/vencer, saldo do VR acabando, orçamento
+  estourado, recorrência prestes a ser cobrada. Ficam só dentro do app (não
+  chegam como push no celular).
+- **Barra de comando (⌘K)**: aperte Cmd/Ctrl+K (ou o botão de lupa flutuante
+  no mobile) para abrir um atalho rápido — lançar gasto/entrada, ir para
+  qualquer tela ou buscar um lançamento, tudo digitando.
 - **Sincronizado**: como os dados ficam no Supabase (nuvem), tudo que você
   lança no PC aparece no iPhone e vice-versa.
 
