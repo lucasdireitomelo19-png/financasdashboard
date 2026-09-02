@@ -23,7 +23,7 @@ export function useAgendaEvents(userId: string | undefined) {
     void refetch()
   }, [refetch])
 
-  const create = async (input: Omit<AgendaEvent, 'id' | 'created_at' | 'user_id'>) => {
+  const create = async (input: Omit<AgendaEvent, 'id' | 'created_at' | 'updated_at' | 'user_id'>) => {
     if (!userId) return { error: 'Sem usuário' }
     const { error } = await supabase.from('agenda_events').insert({ ...input, user_id: userId })
     if (!error) await refetch()
@@ -31,7 +31,10 @@ export function useAgendaEvents(userId: string | undefined) {
   }
 
   const update = async (id: string, input: Partial<Omit<AgendaEvent, 'id' | 'user_id'>>) => {
-    const { error } = await supabase.from('agenda_events').update(input).eq('id', id)
+    const { error } = await supabase
+      .from('agenda_events')
+      .update({ ...input, updated_at: new Date().toISOString() })
+      .eq('id', id)
     if (!error) await refetch()
     return { error: error?.message ?? null }
   }

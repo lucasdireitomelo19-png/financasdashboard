@@ -1,6 +1,8 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useAgendaEvents } from '../hooks/useAgendaEvents'
+import { useGoogleCalendar } from '../hooks/useGoogleCalendar'
 import { Modal } from '../components/Modal'
 import { QuickAddAgenda } from '../components/QuickAddAgenda'
 import { ErrorText, FormField, PrimaryButton, TextArea, TextInput } from '../components/FormField'
@@ -10,10 +12,34 @@ import type { AgendaEvent } from '../types/database'
 
 export function Agenda() {
   const { user } = useAuth()
-  const { events, loading, create, update, remove, toggleDone } = useAgendaEvents(user?.id)
+  const { events, loading, create, update, remove, toggleDone, refetch: refetchEvents } = useAgendaEvents(user?.id)
+  const google = useGoogleCalendar()
+  const [searchParams, setSearchParams] = useSearchParams()
+  const [connecting, setConnecting] = useState(false)
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState<AgendaEvent | null>(null)
   const [openMenu, setOpenMenu] = useState<string | null>(null)
+
+  // volta do consentimento do Google com ?code=... na URL — troca pelo
+  // token e já sincroniza uma vez
+  useEffect(() => {
+    const code = searchParams.get('code')
+    if (!code) return
+    setSearchParams((p) => {
+      p.delete('code')
+      p.delete('scope')
+      return p
+    })
+    setConnecting(true)
+    void google.completeConnection(code).then(async (res) => {
+      if (!res.error) {
+        await google.sync()
+        await refetchEvents()
+      }
+      setConnecting(false)
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const grouped = useMemo(() => {
     const map = new Map<string, AgendaEvent[]>()
@@ -38,6 +64,7 @@ export function Agenda() {
       event_time: values.event_time || null,
       notes: values.notes || null,
       done: editing?.done ?? false,
+      google_event_id: editing?.google_event_id ?? null,
     }
     const result = editing ? await update(editing.id, payload) : await create(payload)
     if (!result.error) {
@@ -52,6 +79,16 @@ export function Agenda() {
     await remove(e.id)
   }
 
+  const handleSync = async () => {
+    const res = await google.sync()
+    if (!res.error) await refetchEvents()
+  }
+
+  const handleDisconnect = async () => {
+    if (!confirm('Desconectar do Google Agenda? Os compromissos já sincronizados continuam salvos aqui, só param de atualizar.')) return
+    await google.disconnect()
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -62,6 +99,49 @@ export function Agenda() {
         >
           + Novo
         </button>
+      </div>
+
+      <div className="hud-panel p-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="font-display text-[10px] uppercase tracking-wider text-slate-500">📆 Google Agenda</p>
+            {connecting ? (
+              <p className="mt-1 text-sm text-slate-400">Conectando...</p>
+            ) : google.connection ? (
+              <p className="mt-1 text-sm text-emerald-300">
+                Conectado
+                {google.connection.last_synced_at ? ` · última sincronização ${new Date(google.connection.last_synced_at).toLocaleString('pt-BR')}` : ' · ainda não sincronizado'}
+              </p>
+            ) : (
+              <p className="mt-1 text-sm text-slate-400">Não conectado</p>
+            )}
+            {google.error && <p className="mt-1 text-xs text-rose-400">{google.error}</p>}
+          </div>
+
+          <div className="flex gap-2">
+            {google.connection ? (
+              <>
+                <button
+                  onClick={() => void handleSync()}
+                  disabled={google.syncing}
+                  className="rounded-lg border border-cyan-500/25 bg-[#0a1120]/70 px-3 py-2 font-display text-xs font-medium uppercase tracking-wider text-cyan-100/80 transition hover:border-cyan-400/50 hover:bg-cyan-500/10 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {google.syncing ? 'Sincronizando...' : '🔄 Sincronizar agora'}
+                </button>
+                <button onClick={() => void handleDisconnect()} className="rounded-lg border border-rose-500/20 px-3 py-2 font-display text-xs font-medium uppercase tracking-wider text-rose-400 hover:bg-rose-500/10">
+                  Desconectar
+                </button>
+              </>
+            ) : (
+              <button
+                onClick={() => google.connect()}
+                className="rounded-lg bg-gradient-to-r from-cyan-500 to-cyan-400 px-4 py-2 font-display text-xs font-bold uppercase tracking-wider text-[#031018] shadow-[0_0_20px_-4px_color-mix(in_srgb,var(--color-accent)_80%,transparent)] transition hover:from-cyan-400 hover:to-cyan-300"
+              >
+                Conectar Google Agenda
+              </button>
+            )}
+          </div>
+        </div>
       </div>
 
       <QuickAddAgenda onCreate={create} />

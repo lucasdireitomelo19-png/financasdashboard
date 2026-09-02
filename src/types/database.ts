@@ -158,5 +158,14 @@ export interface AgendaEvent {
   event_time: string | null
   notes: string | null
   done: boolean
+  google_event_id: string | null
   created_at: string
+  updated_at: string
+}
+
+export interface GoogleCalendarConnection {
+  user_id: string
+  calendar_id: string
+  connected_at: string
+  last_synced_at: string | null
 }

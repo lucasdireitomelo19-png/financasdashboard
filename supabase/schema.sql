@@ -419,8 +419,11 @@ create table if not exists public.agenda_events (
   event_time time,
   notes text,
   done boolean not null default false,
-  created_at timestamptz not null default now()
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
 );
+
+alter table public.agenda_events add column if not exists updated_at timestamptz not null default now();
 
 create index if not exists agenda_events_user_date_idx on public.agenda_events (user_id, event_date, event_time);
 
@@ -440,6 +443,41 @@ create policy "agenda_events_update_own" on public.agenda_events
 
 drop policy if exists "agenda_events_delete_own" on public.agenda_events;
 create policy "agenda_events_delete_own" on public.agenda_events
+  for delete using (auth.uid() = user_id);
+
+-- id do evento correspondente no Google Calendar, quando sincronizado
+alter table public.agenda_events add column if not exists google_event_id text;
+create unique index if not exists agenda_events_google_event_idx on public.agenda_events (user_id, google_event_id) where google_event_id is not null;
+
+-- ----------------------------------------------------------------------------
+-- google_calendar_connections: uma linha por usuário conectado ao Google
+-- Agenda. Os tokens só são lidos/gravados pelas serverless functions
+-- (usando a service role, que ignora RLS) — o app nunca lê o access_token
+-- nem o refresh_token direto do navegador, só sabe se está conectado.
+-- ----------------------------------------------------------------------------
+create table if not exists public.google_calendar_connections (
+  user_id uuid primary key references auth.users(id) on delete cascade,
+  access_token text,
+  refresh_token text not null,
+  access_token_expires_at timestamptz,
+  calendar_id text not null default 'primary',
+  connected_at timestamptz not null default now(),
+  last_synced_at timestamptz
+);
+
+alter table public.google_calendar_connections enable row level security;
+
+-- o usuário só pode ver se está conectado e quando sincronizou pela última
+-- vez (a coluna com o token continua protegida — RLS controla a LINHA, não
+-- a coluna, então o valor tecnicamente viaja se selecionado; a proteção
+-- real é o app nunca fazer esse select. Ainda assim, nada além do dono
+-- consegue ler/gravar essa linha).
+drop policy if exists "google_conn_select_own" on public.google_calendar_connections;
+create policy "google_conn_select_own" on public.google_calendar_connections
+  for select using (auth.uid() = user_id);
+
+drop policy if exists "google_conn_delete_own" on public.google_calendar_connections;
+create policy "google_conn_delete_own" on public.google_calendar_connections
   for delete using (auth.uid() = user_id);
 
 -- ============================================================================

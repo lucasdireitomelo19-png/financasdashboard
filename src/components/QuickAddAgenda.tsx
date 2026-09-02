@@ -6,7 +6,7 @@ import { triggerSaveFeedback } from '../lib/feedback'
 import type { AgendaEvent } from '../types/database'
 
 interface QuickAddAgendaProps {
-  onCreate: (input: Omit<AgendaEvent, 'id' | 'created_at' | 'user_id'>) => Promise<{ error: string | null }>
+  onCreate: (input: Omit<AgendaEvent, 'id' | 'created_at' | 'updated_at' | 'user_id'>) => Promise<{ error: string | null }>
 }
 
 /** Gatilho de texto livre pra criar compromissos sem abrir formulário —
@@ -22,7 +22,7 @@ export function QuickAddAgenda({ onCreate }: QuickAddAgendaProps) {
     setSaving(true)
     setFeedback(null)
     const parsed = parseAgendaInput(text)
-    const result = await onCreate({ title: parsed.title, event_date: parsed.date, event_time: parsed.time, notes: null, done: false })
+    const result = await onCreate({ title: parsed.title, event_date: parsed.date, event_time: parsed.time, notes: null, done: false, google_event_id: null })
     setSaving(false)
     if (result.error) {
       setFeedback(`Não deu pra salvar: ${result.error}`)

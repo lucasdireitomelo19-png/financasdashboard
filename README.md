@@ -91,6 +91,64 @@ No Chrome/Edge, abra a URL publicada e clique no ícone de instalar que
 aparece na barra de endereço (ou menu → "Instalar app"). Ele abre em uma
 janela própria, sem as abas do navegador.
 
+## 4. Sincronização com Google Agenda (opcional)
+
+A aba Agenda pode se conectar ao Google Agenda de verdade: eventos criados
+num lado aparecem no outro automaticamente quando você clica em
+"Sincronizar agora". Isso precisa de um projeto no Google Cloud e de duas
+functions rodando na Vercel (já incluídas na pasta `api/`).
+
+### 4.1 Criar as credenciais no Google Cloud
+
+1. Acesse o [Google Cloud Console](https://console.cloud.google.com/) e crie
+   um projeto novo (ou use um existente).
+2. Vá em **APIs e serviços → Biblioteca**, procure **Google Calendar API** e
+   clique em **Ativar**.
+3. Vá em **APIs e serviços → Tela de consentimento OAuth**:
+   - Tipo de usuário: **Externo**.
+   - Preencha nome do app, e-mail de suporte e de contato.
+   - Em **Escopos**, adicione `.../auth/calendar.events`.
+   - Em **Usuários de teste**, adicione seu próprio e-mail do Google. Enquanto
+     o app estiver em modo "Teste" (o normal pra uso pessoal), só esses
+     e-mails conseguem conectar — e o Google expira a permissão a cada 7
+     dias, pedindo pra reconectar (é só clicar em "Conectar" de novo).
+4. Vá em **APIs e serviços → Credenciais → Criar credenciais → ID do cliente
+   OAuth**:
+   - Tipo de aplicativo: **Aplicativo da Web**.
+   - Em **URIs de redirecionamento autorizados**, adicione
+     `https://SEU-APP.vercel.app/agenda` (troque pela sua URL publicada).
+   - Clique em **Criar**. Guarde o **Client ID** e o **Client Secret** que
+     aparecerem.
+
+### 4.2 Variáveis de ambiente na Vercel
+
+No painel do seu projeto na Vercel, em **Settings → Environment Variables**,
+adicione:
+
+| Nome | Valor | Observação |
+| --- | --- | --- |
+| `VITE_GOOGLE_CLIENT_ID` | o Client ID do passo anterior | pode ficar público |
+| `GOOGLE_CLIENT_SECRET` | o Client Secret | **nunca** prefixe com `VITE_` |
+| `SUPABASE_SERVICE_ROLE_KEY` | em Supabase: Project Settings → API → `service_role` | **nunca** prefixe com `VITE_` — essa chave ignora as permissões (RLS) e só pode rodar no servidor |
+
+Depois de salvar, force um novo deploy (qualquer push resolve, ou o botão
+"Redeploy" no painel da Vercel).
+
+### 4.3 Rodar o SQL novo
+
+Rode de novo o `supabase/schema.sql` (é seguro repetir) — ele adiciona a
+tabela `google_calendar_connections` e a coluna `google_event_id` em
+`agenda_events`.
+
+### Limitações atuais
+
+- Sincroniza **criação e edição**, mas não apaga dos dois lados: excluir um
+  compromisso só de um lado não remove do outro ainda.
+- É sob demanda (botão "Sincronizar agora"), não em tempo real.
+- Com o app do Google em modo "Teste", a conexão expira a cada 7 dias —
+  clique em "Conectar" de novo quando pedir. Pra não expirar, seria preciso
+  publicar o app no Google (processo de verificação do Google, opcional).
+
 ## Funcionalidades
 
 - **Lançamentos**: registre gastos e entradas, com categoria, forma de
