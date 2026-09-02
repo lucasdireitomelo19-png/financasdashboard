@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { useCategories } from '../hooks/useCategories'
+import { usePaymentAccounts } from '../hooks/usePaymentAccounts'
 import { useTransactions, type TransactionFilters } from '../hooks/useTransactions'
 import { Modal } from '../components/Modal'
 import { Select, TextInput } from '../components/FormField'
@@ -16,6 +17,7 @@ const defaultRange = currentMonthRange()
 export function Transactions() {
   const { user } = useAuth()
   const { categories } = useCategories(user?.id)
+  const { accounts } = usePaymentAccounts(user?.id)
   const [filters, setFilters] = useState<TransactionFilters>({
     type: 'all',
     categoryId: 'all',
@@ -31,6 +33,7 @@ export function Transactions() {
   const [editing, setEditing] = useState<Transaction | null>(null)
 
   const categoryMap = useMemo(() => new Map(categories.map((c) => [c.id, c])), [categories])
+  const accountMap = useMemo(() => new Map(accounts.map((a) => [a.id, a])), [accounts])
 
   const totals = useMemo(() => {
     const income = transactions.filter((t) => t.type === 'income').reduce((s, t) => s + Number(t.amount), 0)
@@ -67,6 +70,7 @@ export function Transactions() {
       payment_method: values.payment_method || null,
       is_variable: values.is_variable,
       recurring_template_id: editing?.recurring_template_id ?? null,
+      account_id: values.account_id || null,
       notes: values.notes || null,
     }
     const result = editing ? await update(editing.id, payload) : await create(payload)
@@ -168,6 +172,7 @@ export function Transactions() {
                             <p className="truncate text-xs text-slate-500">
                               {cat?.name ?? 'Sem categoria'}
                               {t.payment_method ? ` · ${PAYMENT_METHOD_LABELS[t.payment_method]}` : ''}
+                              {t.account_id && accountMap.get(t.account_id) ? ` · ${accountMap.get(t.account_id)!.name}` : ''}
                               {t.is_variable ? ' · variável' : ''}
                               {t.recurring_template_id ? ' · recorrente' : ''}
                             </p>
@@ -193,7 +198,7 @@ export function Transactions() {
 
       {modalOpen && (
         <Modal title={editing ? 'Editar lançamento' : 'Novo lançamento'} onClose={() => setModalOpen(false)}>
-          <TransactionForm initial={editing} categories={categories} onCancel={() => setModalOpen(false)} onSubmit={handleSubmit} />
+          <TransactionForm initial={editing} categories={categories} accounts={accounts.filter((a) => !a.archived)} onCancel={() => setModalOpen(false)} onSubmit={handleSubmit} />
         </Modal>
       )}
     </div>

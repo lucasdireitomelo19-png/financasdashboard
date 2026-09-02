@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { ErrorText, FormField, PrimaryButton, Select, TextArea, TextInput } from './FormField'
 import { PAYMENT_METHOD_LABELS } from '../lib/constants'
 import { todayIso } from '../lib/format'
-import type { Category, PaymentMethod, Transaction, TransactionType } from '../types/database'
+import type { Category, PaymentAccount, PaymentMethod, Transaction, TransactionType } from '../types/database'
 
 export interface TransactionFormValues {
   type: TransactionType
@@ -12,12 +12,13 @@ export interface TransactionFormValues {
   date: string
   payment_method: PaymentMethod | ''
   is_variable: boolean
+  account_id: string
   notes: string
 }
 
 function toValues(t?: Transaction | null): TransactionFormValues {
   if (!t) {
-    return { type: 'expense', amount: '', category_id: '', description: '', date: todayIso(), payment_method: '', is_variable: false, notes: '' }
+    return { type: 'expense', amount: '', category_id: '', description: '', date: todayIso(), payment_method: '', is_variable: false, account_id: '', notes: '' }
   }
   return {
     type: t.type,
@@ -27,6 +28,7 @@ function toValues(t?: Transaction | null): TransactionFormValues {
     date: t.date,
     payment_method: t.payment_method ?? '',
     is_variable: t.is_variable,
+    account_id: t.account_id ?? '',
     notes: t.notes ?? '',
   }
 }
@@ -34,11 +36,13 @@ function toValues(t?: Transaction | null): TransactionFormValues {
 export function TransactionForm({
   initial,
   categories,
+  accounts,
   onCancel,
   onSubmit,
 }: {
   initial?: Transaction | null
   categories: Category[]
+  accounts: PaymentAccount[]
   onCancel: () => void
   onSubmit: (values: TransactionFormValues) => Promise<{ error: string | null }>
 }) {
@@ -152,6 +156,19 @@ export function TransactionForm({
           </label>
         </FormField>
       </div>
+
+      {values.type === 'expense' && accounts.length > 0 && (
+        <FormField label="Conta (opcional)">
+          <Select value={values.account_id} onChange={(e) => setValues((v) => ({ ...v, account_id: e.target.value }))}>
+            <option value="">Nenhuma</option>
+            {accounts.map((a) => (
+              <option key={a.id} value={a.id}>
+                {a.icon} {a.name}
+              </option>
+            ))}
+          </Select>
+        </FormField>
+      )}
 
       <FormField label="Observações (opcional)">
         <TextArea rows={2} value={values.notes} onChange={(e) => setValues((v) => ({ ...v, notes: e.target.value }))} />

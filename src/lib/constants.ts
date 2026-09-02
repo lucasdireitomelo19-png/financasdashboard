@@ -1,4 +1,4 @@
-import type { InvestmentCategory, InvestmentMovementType, PaymentMethod } from '../types/database'
+import type { InvestmentCategory, InvestmentMovementType, PaymentAccountType, PaymentMethod } from '../types/database'
 
 export const DEFAULT_CATEGORIES: { name: string; type: 'expense' | 'income'; color: string; icon: string }[] = [
   // gastos
@@ -66,6 +66,11 @@ export const INVESTMENT_CATEGORY_COLORS: Record<InvestmentCategory, string> = {
   tesouro: '#06b6d4',
   reserva_emergencia: '#84cc16',
   outros: '#6b7280',
+}
+
+export const ACCOUNT_TYPE_LABELS: Record<PaymentAccountType, string> = {
+  cartao_credito: 'Cartão de crédito',
+  vale: 'Vale (VR/VA)',
 }
 
 export const CHART_COLORS = [

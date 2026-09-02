@@ -109,6 +109,11 @@ janela própria, sem as abas do navegador.
   carteira, gastos fixos vs. renda) gerado por regras a partir dos seus
   próprios dados. É conteúdo educacional, não uma recomendação de
   investimento individualizada.
+- **Contas**: cartões de crédito (com dia de fechamento/vencimento, fatura
+  atual e anterior, e controle de "paga/pendente") e vale-refeição/alimentação
+  (VR/VA) com crédito mensal, saldo disponível e ciclo próprios. Lançamentos
+  podem ser ligados a uma conta para entrar automaticamente na fatura/saldo
+  certos.
 - **Dashboard**: saldo do mês, entradas x saídas, gastos por categoria e
   evolução dos últimos 6 meses.
 - **Sincronizado**: como os dados ficam no Supabase (nuvem), tudo que você
@@ -137,6 +142,9 @@ Resumo das tabelas:
   investimento
 - `investor_profiles` — resultado do quiz de perfil de investidor (uma linha
   por usuário)
+- `payment_accounts` — cartões de crédito e vales (VR/VA)
+- `credit_card_bill_payments` — marca se a fatura de um determinado ciclo do
+  cartão já foi paga
 
 Todas as tabelas têm Row Level Security (RLS) habilitado: cada usuário só
 consegue ler e escrever seus próprios dados.

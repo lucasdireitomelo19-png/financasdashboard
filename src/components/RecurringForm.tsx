@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { ErrorText, FormField, PrimaryButton, Select, TextInput } from './FormField'
 import { PAYMENT_METHOD_LABELS } from '../lib/constants'
 import { todayIso } from '../lib/format'
-import type { Category, PaymentMethod, RecurrenceFrequency, RecurringTemplate, TransactionType } from '../types/database'
+import type { Category, PaymentAccount, PaymentMethod, RecurrenceFrequency, RecurringTemplate, TransactionType } from '../types/database'
 
 export interface RecurringFormValues {
   type: TransactionType
@@ -13,12 +13,13 @@ export interface RecurringFormValues {
   start_date: string
   end_date: string
   payment_method: PaymentMethod | ''
+  account_id: string
   active: boolean
 }
 
 function toValues(t?: RecurringTemplate | null): RecurringFormValues {
   if (!t) {
-    return { type: 'expense', amount: '', category_id: '', description: '', frequency: 'monthly', start_date: todayIso(), end_date: '', payment_method: '', active: true }
+    return { type: 'expense', amount: '', category_id: '', description: '', frequency: 'monthly', start_date: todayIso(), end_date: '', payment_method: '', account_id: '', active: true }
   }
   return {
     type: t.type,
@@ -29,6 +30,7 @@ function toValues(t?: RecurringTemplate | null): RecurringFormValues {
     start_date: t.start_date,
     end_date: t.end_date ?? '',
     payment_method: t.payment_method ?? '',
+    account_id: t.account_id ?? '',
     active: t.active,
   }
 }
@@ -36,11 +38,13 @@ function toValues(t?: RecurringTemplate | null): RecurringFormValues {
 export function RecurringForm({
   initial,
   categories,
+  accounts,
   onCancel,
   onSubmit,
 }: {
   initial?: RecurringTemplate | null
   categories: Category[]
+  accounts: PaymentAccount[]
   onCancel: () => void
   onSubmit: (values: RecurringFormValues) => Promise<{ error: string | null }>
 }) {
@@ -159,6 +163,19 @@ export function RecurringForm({
           <TextInput type="date" value={values.end_date} onChange={(e) => setValues((v) => ({ ...v, end_date: e.target.value }))} />
         </FormField>
       </div>
+
+      {values.type === 'expense' && accounts.length > 0 && (
+        <FormField label="Conta (opcional)">
+          <Select value={values.account_id} onChange={(e) => setValues((v) => ({ ...v, account_id: e.target.value }))}>
+            <option value="">Nenhuma</option>
+            {accounts.map((a) => (
+              <option key={a.id} value={a.id}>
+                {a.icon} {a.name}
+              </option>
+            ))}
+          </Select>
+        </FormField>
+      )}
 
       <label className="mb-1 flex items-center gap-2 text-sm text-slate-300">
         <input type="checkbox" checked={values.active} onChange={(e) => setValues((v) => ({ ...v, active: e.target.checked }))} className="h-4 w-4 accent-cyan-400" />

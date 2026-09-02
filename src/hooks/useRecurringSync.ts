@@ -39,6 +39,7 @@ export function useRecurringSync(userId: string | undefined, onSynced?: () => vo
           payment_method: template.payment_method,
           is_variable: false,
           recurring_template_id: template.id,
+          account_id: template.account_id,
           notes: null,
         }))
 

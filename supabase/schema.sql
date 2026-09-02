@@ -42,6 +42,45 @@ create policy "categories_delete_own" on public.categories
   for delete using (auth.uid() = user_id);
 
 -- ----------------------------------------------------------------------------
+-- payment_accounts: cartões de crédito e benefícios tipo VR/VA. Cada um tem
+-- sua própria lógica de ciclo (fatura do cartão / crédito mensal do vale).
+-- ----------------------------------------------------------------------------
+create table if not exists public.payment_accounts (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  name text not null,
+  type text not null check (type in ('cartao_credito', 'vale')),
+  color text not null default '#22e0ff',
+  icon text not null default '💳',
+  -- cartão de crédito
+  closing_day int check (closing_day between 1 and 28),
+  due_day int check (due_day between 1 and 28),
+  -- vale (VR/VA)
+  monthly_credit numeric(12, 2),
+  credit_day int check (credit_day between 1 and 28),
+  archived boolean not null default false,
+  created_at timestamptz not null default now()
+);
+
+alter table public.payment_accounts enable row level security;
+
+drop policy if exists "payment_accounts_select_own" on public.payment_accounts;
+create policy "payment_accounts_select_own" on public.payment_accounts
+  for select using (auth.uid() = user_id);
+
+drop policy if exists "payment_accounts_insert_own" on public.payment_accounts;
+create policy "payment_accounts_insert_own" on public.payment_accounts
+  for insert with check (auth.uid() = user_id);
+
+drop policy if exists "payment_accounts_update_own" on public.payment_accounts;
+create policy "payment_accounts_update_own" on public.payment_accounts
+  for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+drop policy if exists "payment_accounts_delete_own" on public.payment_accounts;
+create policy "payment_accounts_delete_own" on public.payment_accounts
+  for delete using (auth.uid() = user_id);
+
+-- ----------------------------------------------------------------------------
 -- recurring_templates: modelos de gastos/entradas recorrentes de valor fixo
 -- (aluguel, salário, assinaturas, etc). O app gera as transações reais a
 -- partir daqui automaticamente.
@@ -60,9 +99,12 @@ create table if not exists public.recurring_templates (
   end_date date,
   active boolean not null default true,
   payment_method text,
+  account_id uuid references public.payment_accounts(id) on delete set null,
   last_generated_date date,
   created_at timestamptz not null default now()
 );
+
+alter table public.recurring_templates add column if not exists account_id uuid references public.payment_accounts(id) on delete set null;
 
 alter table public.recurring_templates enable row level security;
 
@@ -97,13 +139,19 @@ create table if not exists public.transactions (
   payment_method text,
   is_variable boolean not null default false,
   recurring_template_id uuid references public.recurring_templates(id) on delete set null,
+  account_id uuid references public.payment_accounts(id) on delete set null,
   notes text,
   created_at timestamptz not null default now()
 );
 
+-- garante a coluna em bancos que já tinham a tabela transactions antes desta
+-- versão do schema (rodar este arquivo de novo é seguro)
+alter table public.transactions add column if not exists account_id uuid references public.payment_accounts(id) on delete set null;
+
 create index if not exists transactions_user_date_idx on public.transactions (user_id, date desc);
 create index if not exists transactions_user_type_idx on public.transactions (user_id, type);
 create index if not exists transactions_user_category_idx on public.transactions (user_id, category_id);
+create index if not exists transactions_user_account_idx on public.transactions (user_id, account_id);
 
 alter table public.transactions enable row level security;
 
@@ -221,6 +269,39 @@ create policy "investor_profiles_update_own" on public.investor_profiles
 
 drop policy if exists "investor_profiles_delete_own" on public.investor_profiles;
 create policy "investor_profiles_delete_own" on public.investor_profiles
+  for delete using (auth.uid() = user_id);
+
+-- ----------------------------------------------------------------------------
+-- credit_card_bill_payments: marca se a fatura de um determinado ciclo
+-- (identificado por "YYYY-MM", o mês em que ela fecha) já foi paga.
+-- ----------------------------------------------------------------------------
+create table if not exists public.credit_card_bill_payments (
+  id uuid primary key default gen_random_uuid(),
+  account_id uuid not null references public.payment_accounts(id) on delete cascade,
+  user_id uuid not null references auth.users(id) on delete cascade,
+  cycle_key text not null,
+  paid boolean not null default true,
+  paid_date date not null default current_date,
+  created_at timestamptz not null default now(),
+  unique (account_id, cycle_key)
+);
+
+alter table public.credit_card_bill_payments enable row level security;
+
+drop policy if exists "bill_payments_select_own" on public.credit_card_bill_payments;
+create policy "bill_payments_select_own" on public.credit_card_bill_payments
+  for select using (auth.uid() = user_id);
+
+drop policy if exists "bill_payments_insert_own" on public.credit_card_bill_payments;
+create policy "bill_payments_insert_own" on public.credit_card_bill_payments
+  for insert with check (auth.uid() = user_id);
+
+drop policy if exists "bill_payments_update_own" on public.credit_card_bill_payments;
+create policy "bill_payments_update_own" on public.credit_card_bill_payments
+  for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+drop policy if exists "bill_payments_delete_own" on public.credit_card_bill_payments;
+create policy "bill_payments_delete_own" on public.credit_card_bill_payments
   for delete using (auth.uid() = user_id);
 
 -- ============================================================================

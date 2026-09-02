@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { useCategories } from '../hooks/useCategories'
+import { usePaymentAccounts } from '../hooks/usePaymentAccounts'
 import { useRecurringTemplates } from '../hooks/useRecurringTemplates'
 import { Modal } from '../components/Modal'
 import { RecurringForm, type RecurringFormValues } from '../components/RecurringForm'
@@ -15,6 +16,7 @@ const FREQ_LABELS: Record<string, string> = { weekly: 'Semanal', monthly: 'Mensa
 export function Recurring() {
   const { user } = useAuth()
   const { categories } = useCategories(user?.id)
+  const { accounts } = usePaymentAccounts(user?.id)
   const { templates, create, update, remove } = useRecurringTemplates(user?.id)
 
   const [modalOpen, setModalOpen] = useState(false)
@@ -55,6 +57,7 @@ export function Recurring() {
       start_date: values.start_date,
       end_date: values.end_date || null,
       payment_method: values.payment_method || null,
+      account_id: values.account_id || null,
       active: values.active,
     }
     const result = editing ? await update(editing.id, payload) : await create(payload)
@@ -107,7 +110,7 @@ export function Recurring() {
 
       {modalOpen && (
         <Modal title={editing ? 'Editar recorrência' : 'Nova recorrência'} onClose={() => setModalOpen(false)}>
-          <RecurringForm initial={editing} categories={categories} onCancel={() => setModalOpen(false)} onSubmit={handleSubmit} />
+          <RecurringForm initial={editing} categories={categories} accounts={accounts.filter((a) => !a.archived)} onCancel={() => setModalOpen(false)} onSubmit={handleSubmit} />
         </Modal>
       )}
     </div>

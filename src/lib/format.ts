@@ -24,3 +24,11 @@ export function currentMonthRange(offsetMonths = 0): { start: string; end: strin
   const toIso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
   return { start: toIso(start), end: toIso(end) }
 }
+
+export function monthsAgoRange(count: number): { start: string; end: string } {
+  const now = new Date()
+  const start = new Date(now.getFullYear(), now.getMonth() - (count - 1), 1)
+  const end = new Date(now.getFullYear(), now.getMonth() + 1, 0)
+  const toIso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  return { start: toIso(start), end: toIso(end) }
+}

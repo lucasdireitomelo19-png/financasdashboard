@@ -5,7 +5,7 @@ import { useCategories } from '../hooks/useCategories'
 import { useInvestments } from '../hooks/useInvestments'
 import { useRecurringSync } from '../hooks/useRecurringSync'
 import { supabase } from '../lib/supabase'
-import { formatCurrency, formatMonthLabel } from '../lib/format'
+import { formatCurrency, formatMonthLabel, monthsAgoRange } from '../lib/format'
 import { CHART_COLORS } from '../lib/constants'
 import { AnimatedNumber } from '../components/AnimatedNumber'
 import { TiltCard } from '../components/TiltCard'
@@ -18,14 +18,6 @@ const HUD_TOOLTIP_STYLE = {
   borderRadius: 8,
   color: '#dcecf7',
   boxShadow: '0 0 20px -4px rgba(34,224,255,0.5)',
-}
-
-function monthsAgoRange(count: number) {
-  const now = new Date()
-  const start = new Date(now.getFullYear(), now.getMonth() - (count - 1), 1)
-  const end = new Date(now.getFullYear(), now.getMonth() + 1, 0)
-  const toIso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-  return { start: toIso(start), end: toIso(end) }
 }
 
 export function Dashboard() {

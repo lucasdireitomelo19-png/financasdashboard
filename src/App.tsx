@@ -8,6 +8,7 @@ import { Transactions } from './pages/Transactions'
 import { Recurring } from './pages/Recurring'
 import { Investments } from './pages/Investments'
 import { Categories } from './pages/Categories'
+import { Accounts } from './pages/Accounts'
 
 function AppRoutes() {
   const { session, loading } = useAuth()
@@ -30,6 +31,7 @@ function AppRoutes() {
         <Route path="/" element={<Dashboard />} />
         <Route path="/lancamentos" element={<Transactions />} />
         <Route path="/recorrentes" element={<Recurring />} />
+        <Route path="/contas" element={<Accounts />} />
         <Route path="/investimentos" element={<Investments />} />
         <Route path="/categorias" element={<Categories />} />
         <Route path="*" element={<Navigate to="/" replace />} />

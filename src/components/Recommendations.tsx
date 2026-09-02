@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Legend, ResponsiveContainer, Tooltip } from 'recharts'
 import { supabase } from '../lib/supabase'
+import { monthsAgoRange } from '../lib/format'
 import { useInvestorProfile } from '../hooks/useInvestorProfile'
 import { useRecurringTemplates } from '../hooks/useRecurringTemplates'
 import { computeDiagnostics, type Finding, type FindingSeverity } from '../lib/diagnostics'
@@ -18,14 +19,6 @@ const SEVERITY_STYLES: Record<FindingSeverity, { border: string; bg: string; tex
   warning: { border: 'border-amber-500/40', bg: 'bg-amber-500/10', text: 'text-amber-300', icon: '🔶', label: 'Ponto de melhoria' },
   info: { border: 'border-cyan-500/30', bg: 'bg-cyan-500/10', text: 'text-cyan-200', icon: 'ℹ️', label: 'Sugestão' },
   success: { border: 'border-emerald-500/30', bg: 'bg-emerald-500/10', text: 'text-emerald-300', icon: '✅', label: 'Em dia' },
-}
-
-function monthsAgoRange(count: number) {
-  const now = new Date()
-  const start = new Date(now.getFullYear(), now.getMonth() - (count - 1), 1)
-  const end = new Date(now.getFullYear(), now.getMonth() + 1, 0)
-  const toIso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
-  return { start: toIso(start), end: toIso(end) }
 }
 
 export function Recommendations({ userId, investments }: { userId: string | undefined; investments: InvestmentWithTotals[] }) {

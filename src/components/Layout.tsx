@@ -4,11 +4,12 @@ import { ArcReactor } from './ArcReactor'
 import { ParticleField } from './ParticleField'
 
 const NAV_ITEMS = [
-  { to: '/', label: 'Início', icon: '🏠', end: true },
-  { to: '/lancamentos', label: 'Lançamentos', icon: '📋', end: false },
-  { to: '/recorrentes', label: 'Recorrentes', icon: '🔁', end: false },
-  { to: '/investimentos', label: 'Investir', icon: '📈', end: false },
-  { to: '/categorias', label: 'Categorias', icon: '🏷️', end: false },
+  { to: '/', label: 'Início', mobileLabel: 'Início', icon: '🏠', end: true },
+  { to: '/lancamentos', label: 'Lançamentos', mobileLabel: 'Extrato', icon: '📋', end: false },
+  { to: '/recorrentes', label: 'Recorrentes', mobileLabel: 'Fixos', icon: '🔁', end: false },
+  { to: '/contas', label: 'Contas', mobileLabel: 'Contas', icon: '💳', end: false },
+  { to: '/investimentos', label: 'Investir', mobileLabel: 'Investir', icon: '📈', end: false },
+  { to: '/categorias', label: 'Categorias', mobileLabel: 'Categ.', icon: '🏷️', end: false },
 ]
 
 export function Layout() {
@@ -82,7 +83,7 @@ export function Layout() {
             to={item.to}
             end={item.end}
             className={({ isActive }) =>
-              `flex flex-1 flex-col items-center gap-0.5 py-2 font-display text-[9px] font-medium uppercase tracking-wide transition-colors ${
+              `flex min-w-0 flex-1 flex-col items-center gap-0.5 px-0.5 py-2 font-display text-[8.5px] font-medium uppercase tracking-tight transition-colors ${
                 isActive ? 'text-cyan-300' : 'text-slate-600'
               }`
             }
@@ -90,7 +91,7 @@ export function Layout() {
             {({ isActive }) => (
               <>
                 <span className={`text-lg transition-transform ${isActive ? 'scale-110 drop-shadow-[0_0_6px_rgba(34,224,255,0.9)]' : ''}`}>{item.icon}</span>
-                {item.label}
+                <span className="max-w-full truncate">{item.mobileLabel}</span>
               </>
             )}
           </NavLink>

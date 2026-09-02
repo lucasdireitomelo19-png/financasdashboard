@@ -13,6 +13,7 @@ export type InvestmentCategory =
 export type InvestmentMovementType = 'aporte' | 'resgate' | 'rendimento' | 'ajuste'
 export type PaymentMethod = 'dinheiro' | 'debito' | 'credito' | 'pix' | 'transferencia' | 'boleto' | 'outro'
 export type RiskProfile = 'conservador' | 'moderado' | 'arrojado'
+export type PaymentAccountType = 'cartao_credito' | 'vale'
 
 export interface Category {
   id: string
@@ -39,6 +40,7 @@ export interface RecurringTemplate {
   end_date: string | null
   active: boolean
   payment_method: PaymentMethod | null
+  account_id: string | null
   last_generated_date: string | null
   created_at: string
 }
@@ -54,7 +56,33 @@ export interface Transaction {
   payment_method: PaymentMethod | null
   is_variable: boolean
   recurring_template_id: string | null
+  account_id: string | null
   notes: string | null
+  created_at: string
+}
+
+export interface PaymentAccount {
+  id: string
+  user_id: string
+  name: string
+  type: PaymentAccountType
+  color: string
+  icon: string
+  closing_day: number | null
+  due_day: number | null
+  monthly_credit: number | null
+  credit_day: number | null
+  archived: boolean
+  created_at: string
+}
+
+export interface CreditCardBillPayment {
+  id: string
+  account_id: string
+  user_id: string
+  cycle_key: string
+  paid: boolean
+  paid_date: string
   created_at: string
 }
 
