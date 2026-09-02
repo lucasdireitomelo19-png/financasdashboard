@@ -3,10 +3,12 @@ import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, BarChart, Bar, XAxis
 import { useAuth } from '../context/AuthContext'
 import { useCategories } from '../hooks/useCategories'
 import { useInvestments } from '../hooks/useInvestments'
+import { usePaymentAccounts } from '../hooks/usePaymentAccounts'
 import { useRecurringSync } from '../hooks/useRecurringSync'
 import { supabase } from '../lib/supabase'
 import { formatCurrency, formatMonthLabel, monthsAgoRange, todayIso } from '../lib/format'
 import { CHART_COLORS } from '../lib/constants'
+import { currentCreditCardCycle, computeVrBalance, cycleRangeIso } from '../lib/accountCycles'
 import { computeInsights, type Insight } from '../lib/insights'
 import { AnimatedNumber } from '../components/AnimatedNumber'
 import { TiltCard } from '../components/TiltCard'
@@ -31,6 +33,7 @@ export function Dashboard() {
   const { user } = useAuth()
   const { categories } = useCategories(user?.id)
   const { investments, loading: loadingInvestments } = useInvestments(user?.id)
+  const { accounts } = usePaymentAccounts(user?.id)
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [futureInstallmentsTotal, setFutureInstallmentsTotal] = useState(0)
   const [loading, setLoading] = useState(true)
@@ -79,6 +82,22 @@ export function Dashboard() {
 
   const totalInvested = investments.reduce((s, i) => s + i.currentValue, 0)
   const netWorth = totalInvested - futureInstallmentsTotal
+
+  const activeAccounts = useMemo(() => accounts.filter((a) => !a.archived), [accounts])
+  const accountBalances = useMemo(
+    () =>
+      activeAccounts.map((a) => {
+        if (a.type === 'vale') {
+          return { account: a, value: computeVrBalance(a, transactions, now), label: 'disponível' }
+        }
+        const cycle = currentCreditCardCycle(a, now)
+        const { start, end } = cycleRangeIso(cycle)
+        const value = transactions.filter((t) => t.account_id === a.id && t.type === 'expense' && t.date >= start && t.date <= end).reduce((s, t) => s + Number(t.amount), 0)
+        return { account: a, value, label: 'fatura atual' }
+      }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [activeAccounts, transactions],
+  )
 
   const categoryMap = useMemo(() => new Map(categories.map((c) => [c.id, c])), [categories])
 
@@ -182,6 +201,32 @@ export function Dashboard() {
         <StatCard label="Saldo do mês" value={balance} color={balance >= 0 ? 'text-emerald-400' : 'text-rose-400'} loading={loading} />
         <StatCard label="Patrimônio investido" value={totalInvested} color="text-cyan-300" loading={loadingInvestments} />
       </div>
+
+      {accountBalances.length > 0 && (
+        <div>
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="font-display text-xs font-semibold uppercase tracking-wider text-cyan-300/70">Suas contas</h2>
+            <Link to="/contas" className="font-display text-[11px] uppercase tracking-wide text-cyan-400 hover:underline">
+              Gerenciar
+            </Link>
+          </div>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+            {accountBalances.map(({ account: a, value, label }) => (
+              <TiltCard key={a.id}>
+                <div className="hud-panel h-full p-3 text-center">
+                  <p className="flex items-center justify-center gap-1.5 font-display text-[10px] uppercase tracking-wider text-slate-500">
+                    <span className="text-sm">{a.icon}</span> {a.name}
+                  </p>
+                  <p className="glow-text mt-1 font-display text-base font-bold" style={{ color: a.color }}>
+                    <AnimatedNumber value={value} format={formatCurrency} />
+                  </p>
+                  <p className="mt-0.5 text-[10px] text-slate-500">{label}</p>
+                </div>
+              </TiltCard>
+            ))}
+          </div>
+        </div>
+      )}
 
       {insights.length > 0 && (
         <div className="hud-panel p-4">
