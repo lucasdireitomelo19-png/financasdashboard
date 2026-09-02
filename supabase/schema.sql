@@ -140,18 +140,25 @@ create table if not exists public.transactions (
   is_variable boolean not null default false,
   recurring_template_id uuid references public.recurring_templates(id) on delete set null,
   account_id uuid references public.payment_accounts(id) on delete set null,
+  installment_group_id uuid,
+  installment_number int check (installment_number > 0),
+  installment_total int check (installment_total > 0),
   notes text,
   created_at timestamptz not null default now()
 );
 
--- garante a coluna em bancos que já tinham a tabela transactions antes desta
--- versão do schema (rodar este arquivo de novo é seguro)
+-- garante as colunas em bancos que já tinham a tabela transactions antes
+-- desta versão do schema (rodar este arquivo de novo é seguro)
 alter table public.transactions add column if not exists account_id uuid references public.payment_accounts(id) on delete set null;
+alter table public.transactions add column if not exists installment_group_id uuid;
+alter table public.transactions add column if not exists installment_number int check (installment_number > 0);
+alter table public.transactions add column if not exists installment_total int check (installment_total > 0);
 
 create index if not exists transactions_user_date_idx on public.transactions (user_id, date desc);
 create index if not exists transactions_user_type_idx on public.transactions (user_id, type);
 create index if not exists transactions_user_category_idx on public.transactions (user_id, category_id);
 create index if not exists transactions_user_account_idx on public.transactions (user_id, account_id);
+create index if not exists transactions_installment_group_idx on public.transactions (installment_group_id);
 
 alter table public.transactions enable row level security;
 
@@ -302,6 +309,102 @@ create policy "bill_payments_update_own" on public.credit_card_bill_payments
 
 drop policy if exists "bill_payments_delete_own" on public.credit_card_bill_payments;
 create policy "bill_payments_delete_own" on public.credit_card_bill_payments
+  for delete using (auth.uid() = user_id);
+
+-- ----------------------------------------------------------------------------
+-- category_budgets: limite mensal opcional por categoria de gasto
+-- ----------------------------------------------------------------------------
+create table if not exists public.category_budgets (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  category_id uuid not null references public.categories(id) on delete cascade,
+  monthly_limit numeric(12, 2) not null check (monthly_limit > 0),
+  created_at timestamptz not null default now(),
+  unique (user_id, category_id)
+);
+
+alter table public.category_budgets enable row level security;
+
+drop policy if exists "category_budgets_select_own" on public.category_budgets;
+create policy "category_budgets_select_own" on public.category_budgets
+  for select using (auth.uid() = user_id);
+
+drop policy if exists "category_budgets_insert_own" on public.category_budgets;
+create policy "category_budgets_insert_own" on public.category_budgets
+  for insert with check (auth.uid() = user_id);
+
+drop policy if exists "category_budgets_update_own" on public.category_budgets;
+create policy "category_budgets_update_own" on public.category_budgets
+  for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+drop policy if exists "category_budgets_delete_own" on public.category_budgets;
+create policy "category_budgets_delete_own" on public.category_budgets
+  for delete using (auth.uid() = user_id);
+
+-- ----------------------------------------------------------------------------
+-- savings_goals: metas de economia (ex: "Viagem", "Reserva do carro")
+-- ----------------------------------------------------------------------------
+create table if not exists public.savings_goals (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  name text not null,
+  target_amount numeric(12, 2) not null check (target_amount > 0),
+  target_date date,
+  color text not null default '#22e0ff',
+  icon text not null default '🎯',
+  archived boolean not null default false,
+  created_at timestamptz not null default now()
+);
+
+alter table public.savings_goals enable row level security;
+
+drop policy if exists "savings_goals_select_own" on public.savings_goals;
+create policy "savings_goals_select_own" on public.savings_goals
+  for select using (auth.uid() = user_id);
+
+drop policy if exists "savings_goals_insert_own" on public.savings_goals;
+create policy "savings_goals_insert_own" on public.savings_goals
+  for insert with check (auth.uid() = user_id);
+
+drop policy if exists "savings_goals_update_own" on public.savings_goals;
+create policy "savings_goals_update_own" on public.savings_goals
+  for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+drop policy if exists "savings_goals_delete_own" on public.savings_goals;
+create policy "savings_goals_delete_own" on public.savings_goals
+  for delete using (auth.uid() = user_id);
+
+-- ----------------------------------------------------------------------------
+-- savings_goal_contributions: aportes (ou retiradas) de uma meta de economia
+-- ----------------------------------------------------------------------------
+create table if not exists public.savings_goal_contributions (
+  id uuid primary key default gen_random_uuid(),
+  goal_id uuid not null references public.savings_goals(id) on delete cascade,
+  user_id uuid not null references auth.users(id) on delete cascade,
+  amount numeric(12, 2) not null,
+  date date not null default current_date,
+  notes text,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists savings_goal_contributions_goal_idx on public.savings_goal_contributions (goal_id, date desc);
+
+alter table public.savings_goal_contributions enable row level security;
+
+drop policy if exists "savings_contrib_select_own" on public.savings_goal_contributions;
+create policy "savings_contrib_select_own" on public.savings_goal_contributions
+  for select using (auth.uid() = user_id);
+
+drop policy if exists "savings_contrib_insert_own" on public.savings_goal_contributions;
+create policy "savings_contrib_insert_own" on public.savings_goal_contributions
+  for insert with check (auth.uid() = user_id);
+
+drop policy if exists "savings_contrib_update_own" on public.savings_goal_contributions;
+create policy "savings_contrib_update_own" on public.savings_goal_contributions
+  for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+drop policy if exists "savings_contrib_delete_own" on public.savings_goal_contributions;
+create policy "savings_contrib_delete_own" on public.savings_goal_contributions
   for delete using (auth.uid() = user_id);
 
 -- ============================================================================

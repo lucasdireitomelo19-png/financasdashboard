@@ -8,6 +8,7 @@ import { Select, TextInput } from '../components/FormField'
 import { TransactionForm, type TransactionFormValues } from '../components/TransactionForm'
 import { formatCurrency, currentMonthRange } from '../lib/format'
 import { PAYMENT_METHOD_LABELS } from '../lib/constants'
+import { buildInstallmentRows } from '../lib/installments'
 import { AnimatedNumber } from '../components/AnimatedNumber'
 import { TiltCard } from '../components/TiltCard'
 import type { Transaction } from '../types/database'
@@ -27,7 +28,7 @@ export function Transactions() {
     search: '',
     variableOnly: false,
   })
-  const { transactions, loading, create, update, remove } = useTransactions(user?.id, filters)
+  const { transactions, loading, create, createMany, update, remove, removeInstallmentGroup } = useTransactions(user?.id, filters)
 
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState<Transaction | null>(null)
@@ -61,6 +62,21 @@ export function Transactions() {
   }
 
   const handleSubmit = async (values: TransactionFormValues) => {
+    if (!editing && values.is_installment) {
+      const rows = buildInstallmentRows({
+        totalAmount: Number(values.amount),
+        installments: Number(values.installments),
+        firstDate: values.date,
+        description: values.description || 'Compra parcelada',
+        category_id: values.category_id || null,
+        payment_method: values.payment_method || null,
+        account_id: values.account_id || null,
+      })
+      const result = await createMany(rows)
+      if (!result.error) setModalOpen(false)
+      return result
+    }
+
     const payload = {
       type: values.type,
       amount: Number(values.amount),
@@ -71,6 +87,9 @@ export function Transactions() {
       is_variable: values.is_variable,
       recurring_template_id: editing?.recurring_template_id ?? null,
       account_id: values.account_id || null,
+      installment_group_id: editing?.installment_group_id ?? null,
+      installment_number: editing?.installment_number ?? null,
+      installment_total: editing?.installment_total ?? null,
       notes: values.notes || null,
     }
     const result = editing ? await update(editing.id, payload) : await create(payload)
@@ -79,6 +98,15 @@ export function Transactions() {
   }
 
   const handleDelete = async (t: Transaction) => {
+    if (t.installment_group_id) {
+      const deleteAll = confirm(`"${t.description}" faz parte de uma compra parcelada.\n\nOK = excluir TODAS as parcelas dessa compra.\nCancelar = escolher excluir só esta parcela.`)
+      if (deleteAll) {
+        await removeInstallmentGroup(t.installment_group_id)
+        return
+      }
+      if (confirm(`Excluir só esta parcela ("${t.description}")?`)) await remove(t.id)
+      return
+    }
     if (!confirm(`Excluir "${t.description || 'este lançamento'}"?`)) return
     await remove(t.id)
   }
@@ -175,6 +203,7 @@ export function Transactions() {
                               {t.account_id && accountMap.get(t.account_id) ? ` · ${accountMap.get(t.account_id)!.name}` : ''}
                               {t.is_variable ? ' · variável' : ''}
                               {t.recurring_template_id ? ' · recorrente' : ''}
+                              {t.installment_group_id ? ` · parcela ${t.installment_number}/${t.installment_total}` : ''}
                             </p>
                           </div>
                         </button>

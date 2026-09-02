@@ -3,6 +3,7 @@ import { AuthProvider, useAuth } from './context/AuthContext'
 import { Layout } from './components/Layout'
 import { LoadingReactor } from './components/LoadingReactor'
 import { Login } from './pages/Login'
+import { ResetPassword } from './pages/ResetPassword'
 import { Dashboard } from './pages/Dashboard'
 import { Transactions } from './pages/Transactions'
 import { Recurring } from './pages/Recurring'
@@ -11,10 +12,21 @@ import { Categories } from './pages/Categories'
 import { Accounts } from './pages/Accounts'
 
 function AppRoutes() {
-  const { session, loading } = useAuth()
+  const { session, loading, passwordRecovery } = useAuth()
 
   if (loading) {
     return <LoadingReactor />
+  }
+
+  // Vem do link de recuperação de senha por e-mail: mostra a tela de nova
+  // senha independente de já existir uma sessão (o Supabase cria uma sessão
+  // temporária de recuperação ao clicar no link).
+  if (passwordRecovery) {
+    return (
+      <Routes>
+        <Route path="*" element={<ResetPassword />} />
+      </Routes>
+    )
   }
 
   if (!session) {

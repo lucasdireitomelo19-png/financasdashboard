@@ -1,12 +1,15 @@
 import { useEffect, useMemo, useState } from 'react'
-import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend } from 'recharts'
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend, LineChart, Line } from 'recharts'
 import { useAuth } from '../context/AuthContext'
 import { useCategories } from '../hooks/useCategories'
 import { useInvestments } from '../hooks/useInvestments'
+import { usePaymentAccounts } from '../hooks/usePaymentAccounts'
 import { useRecurringSync } from '../hooks/useRecurringSync'
 import { supabase } from '../lib/supabase'
-import { formatCurrency, formatMonthLabel, monthsAgoRange } from '../lib/format'
+import { formatCurrency, formatMonthLabel, monthsAgoRange, todayIso } from '../lib/format'
 import { CHART_COLORS } from '../lib/constants'
+import { computeVrBalance } from '../lib/accountCycles'
+import { computeInsights, type Insight } from '../lib/insights'
 import { AnimatedNumber } from '../components/AnimatedNumber'
 import { TiltCard } from '../components/TiltCard'
 import type { Transaction } from '../types/database'
@@ -20,11 +23,19 @@ const HUD_TOOLTIP_STYLE = {
   boxShadow: '0 0 20px -4px rgba(34,224,255,0.5)',
 }
 
+const INSIGHT_STYLES: Record<Insight['tone'], { border: string; bg: string; text: string; icon: string }> = {
+  alert: { border: 'border-rose-500/40', bg: 'bg-rose-500/10', text: 'text-rose-300', icon: '⚠️' },
+  positive: { border: 'border-emerald-500/30', bg: 'bg-emerald-500/10', text: 'text-emerald-300', icon: '✅' },
+  info: { border: 'border-cyan-500/30', bg: 'bg-cyan-500/10', text: 'text-cyan-200', icon: 'ℹ️' },
+}
+
 export function Dashboard() {
   const { user } = useAuth()
   const { categories } = useCategories(user?.id)
   const { investments, loading: loadingInvestments } = useInvestments(user?.id)
+  const { accounts } = usePaymentAccounts(user?.id)
   const [transactions, setTransactions] = useState<Transaction[]>([])
+  const [futureInstallmentsTotal, setFutureInstallmentsTotal] = useState(0)
   const [loading, setLoading] = useState(true)
   const [reloadKey, setReloadKey] = useState(0)
 
@@ -44,23 +55,38 @@ export function Dashboard() {
         setTransactions(data ?? [])
         setLoading(false)
       })
+
+    supabase
+      .from('transactions')
+      .select('amount')
+      .eq('user_id', user.id)
+      .eq('type', 'expense')
+      .not('installment_group_id', 'is', null)
+      .gt('date', todayIso())
+      .then(({ data }) => {
+        setFutureInstallmentsTotal((data ?? []).reduce((s, row) => s + Number(row.amount), 0))
+      })
   }, [user, reloadKey])
 
   const now = new Date()
   const currentMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+  const prevMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+  const prevMonthKey = `${prevMonthDate.getFullYear()}-${String(prevMonthDate.getMonth() + 1).padStart(2, '0')}`
 
-  const currentMonthTx = useMemo(
-    () => transactions.filter((t) => t.date.startsWith(currentMonthKey)),
-    [transactions, currentMonthKey],
-  )
+  const currentMonthTx = useMemo(() => transactions.filter((t) => t.date.startsWith(currentMonthKey)), [transactions, currentMonthKey])
+  const previousMonthTx = useMemo(() => transactions.filter((t) => t.date.startsWith(prevMonthKey)), [transactions, prevMonthKey])
 
   const income = currentMonthTx.filter((t) => t.type === 'income').reduce((s, t) => s + Number(t.amount), 0)
   const expense = currentMonthTx.filter((t) => t.type === 'expense').reduce((s, t) => s + Number(t.amount), 0)
   const balance = income - expense
 
   const totalInvested = investments.reduce((s, i) => s + i.currentValue, 0)
+  const vrBalance = accounts.filter((a) => a.type === 'vale' && !a.archived).reduce((s, a) => s + computeVrBalance(a, transactions, now), 0)
+  const netWorth = totalInvested + vrBalance - futureInstallmentsTotal
 
   const categoryMap = useMemo(() => new Map(categories.map((c) => [c.id, c])), [categories])
+
+  const insights = useMemo(() => computeInsights(currentMonthTx, previousMonthTx, categoryMap), [currentMonthTx, previousMonthTx, categoryMap])
 
   const expenseByCategory = useMemo(() => {
     const totals = new Map<string, number>()
@@ -96,6 +122,24 @@ export function Dashboard() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [transactions])
 
+  // taxa de poupança média dos últimos 3 meses completos (exclui o mês atual, que ainda não fechou)
+  const avgMonthlySavings = useMemo(() => {
+    const closedMonths = evolution.slice(0, 5).slice(-3)
+    if (closedMonths.length === 0) return 0
+    const total = closedMonths.reduce((s, m) => s + (m.entradas - m.saidas), 0)
+    return total / closedMonths.length
+  }, [evolution])
+
+  const projection = useMemo(() => {
+    const points: { label: string; valor: number }[] = [{ label: 'Hoje', valor: netWorth }]
+    for (let i = 1; i <= 6; i++) {
+      const d = new Date(now.getFullYear(), now.getMonth() + i, 1)
+      points.push({ label: formatMonthLabel(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01`), valor: netWorth + avgMonthlySavings * i })
+    }
+    return points
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [netWorth, avgMonthlySavings])
+
   const recent = [...currentMonthTx].sort((a, b) => (a.date < b.date ? 1 : -1)).slice(0, 6)
 
   return (
@@ -105,12 +149,65 @@ export function Dashboard() {
         <p className="text-sm text-slate-400">Resumo de {formatMonthLabel(`${currentMonthKey}-01`)}</p>
       </div>
 
+      <TiltCard>
+        <div className="hud-panel p-5">
+          <p className="font-display text-[10px] uppercase tracking-wider text-slate-500">Patrimônio líquido</p>
+          <p className="glow-text mt-1 font-display text-3xl font-bold text-cyan-100">
+            {loading || loadingInvestments ? '···' : <AnimatedNumber value={netWorth} format={formatCurrency} />}
+          </p>
+          <p className="mt-1 text-xs text-slate-500">
+            investimentos ({formatCurrency(totalInvested)}) + saldo VR ({formatCurrency(vrBalance)}) − parcelas futuras comprometidas ({formatCurrency(futureInstallmentsTotal)})
+          </p>
+
+          {avgMonthlySavings !== 0 && (
+            <div className="mt-4 border-t border-cyan-500/15 pt-4">
+              <p className="mb-2 text-xs text-slate-400">
+                Guardando sua média de{' '}
+                <span className={avgMonthlySavings >= 0 ? 'text-emerald-300' : 'text-rose-300'}>{formatCurrency(avgMonthlySavings)}/mês</span>, em 6 meses seu patrimônio pode chegar a{' '}
+                <span className="font-semibold text-cyan-200">{formatCurrency(netWorth + avgMonthlySavings * 6)}</span>.
+              </p>
+              <ResponsiveContainer width="100%" height={140}>
+                <LineChart data={projection}>
+                  <XAxis dataKey="label" stroke="#3d5872" fontSize={10} tickLine={false} axisLine={false} />
+                  <YAxis hide domain={['dataMin', 'dataMax']} />
+                  <Tooltip formatter={(value) => formatCurrency(Number(value))} contentStyle={HUD_TOOLTIP_STYLE} />
+                  <Line type="monotone" dataKey="valor" stroke="#ffb020" strokeWidth={2} strokeDasharray="5 4" dot={{ r: 3, fill: '#ffb020' }} />
+                </LineChart>
+              </ResponsiveContainer>
+              <p className="mt-1 text-center text-[10px] uppercase tracking-wider text-slate-600">Projeção · não é garantia de rentabilidade</p>
+            </div>
+          )}
+        </div>
+      </TiltCard>
+
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <StatCard label="Entradas" value={income} color="text-emerald-400" loading={loading} />
         <StatCard label="Saídas" value={expense} color="text-rose-400" loading={loading} />
         <StatCard label="Saldo do mês" value={balance} color={balance >= 0 ? 'text-emerald-400' : 'text-rose-400'} loading={loading} />
         <StatCard label="Patrimônio investido" value={totalInvested} color="text-cyan-300" loading={loadingInvestments} />
       </div>
+
+      {insights.length > 0 && (
+        <div className="hud-panel p-4">
+          <h2 className="mb-3 font-display text-xs font-semibold uppercase tracking-wider text-cyan-300/70">Insights do mês</h2>
+          <div className="space-y-2">
+            {insights.map((ins) => {
+              const style = INSIGHT_STYLES[ins.tone]
+              return (
+                <div key={ins.id} className={`rounded-lg border px-3 py-2.5 ${style.border} ${style.bg}`}>
+                  <div className="flex items-start gap-2">
+                    <span className="text-base leading-none">{style.icon}</span>
+                    <div className="min-w-0">
+                      <p className={`text-sm font-semibold ${style.text}`}>{ins.title}</p>
+                      <p className="mt-0.5 text-xs text-slate-400">{ins.description}</p>
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
 
       <div className="grid gap-4 lg:grid-cols-2">
         <div className="hud-panel p-4">

@@ -4,20 +4,37 @@ import { ErrorText, FormField, PrimaryButton, TextInput } from '../components/Fo
 import { ArcReactor } from '../components/ArcReactor'
 import { isSupabaseConfigured } from '../lib/supabase'
 
+type Mode = 'signin' | 'signup' | 'reset'
+
 export function Login() {
-  const { signIn, signUp } = useAuth()
-  const [mode, setMode] = useState<'signin' | 'signup'>('signin')
+  const { signIn, signUp, requestPasswordReset } = useAuth()
+  const [mode, setMode] = useState<Mode>('signin')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [info, setInfo] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
+  const switchMode = (next: Mode) => {
+    setMode(next)
+    setError(null)
+    setInfo(null)
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
     setInfo(null)
     setLoading(true)
+
+    if (mode === 'reset') {
+      const result = await requestPasswordReset(email)
+      setLoading(false)
+      if (result.error) setError(result.error)
+      else setInfo('Se esse e-mail estiver cadastrado, enviamos um link para redefinir sua senha. Confira sua caixa de entrada (e o spam).')
+      return
+    }
+
     const result = mode === 'signin' ? await signIn(email, password) : await signUp(email, password)
     setLoading(false)
     if (result.error) {
@@ -53,34 +70,38 @@ export function Login() {
             <TextInput type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="voce@email.com" autoComplete="email" />
           </FormField>
 
-          <div className="mb-4">
-            <FormField label="Senha">
-              <TextInput
-                type="password"
-                required
-                minLength={6}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}
-              />
-            </FormField>
-          </div>
+          {mode !== 'reset' && (
+            <div className="mb-4">
+              <FormField label="Senha">
+                <TextInput
+                  type="password"
+                  required
+                  minLength={6}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}
+                />
+              </FormField>
+            </div>
+          )}
 
           <PrimaryButton type="submit" disabled={loading}>
-            {loading ? 'Aguarde...' : mode === 'signin' ? 'Entrar' : 'Criar conta'}
+            {loading ? 'Aguarde...' : mode === 'signin' ? 'Entrar' : mode === 'signup' ? 'Criar conta' : 'Enviar link de recuperação'}
           </PrimaryButton>
+
+          {mode === 'signin' && (
+            <button type="button" onClick={() => switchMode('reset')} className="mt-4 w-full text-center text-xs text-slate-500 hover:text-cyan-300">
+              Esqueci minha senha
+            </button>
+          )}
 
           <button
             type="button"
-            onClick={() => {
-              setMode(mode === 'signin' ? 'signup' : 'signin')
-              setError(null)
-              setInfo(null)
-            }}
-            className="mt-4 w-full text-center text-sm text-slate-400 hover:text-cyan-300"
+            onClick={() => switchMode(mode === 'signin' ? 'signup' : 'signin')}
+            className="mt-2 w-full text-center text-sm text-slate-400 hover:text-cyan-300"
           >
-            {mode === 'signin' ? 'Não tem conta? Criar agora' : 'Já tem conta? Entrar'}
+            {mode === 'signup' ? 'Já tem conta? Entrar' : mode === 'reset' ? 'Voltar para o login' : 'Não tem conta? Criar agora'}
           </button>
         </form>
       </div>

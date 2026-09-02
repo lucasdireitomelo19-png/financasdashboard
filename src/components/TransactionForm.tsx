@@ -13,12 +13,26 @@ export interface TransactionFormValues {
   payment_method: PaymentMethod | ''
   is_variable: boolean
   account_id: string
+  is_installment: boolean
+  installments: string
   notes: string
 }
 
 function toValues(t?: Transaction | null): TransactionFormValues {
   if (!t) {
-    return { type: 'expense', amount: '', category_id: '', description: '', date: todayIso(), payment_method: '', is_variable: false, account_id: '', notes: '' }
+    return {
+      type: 'expense',
+      amount: '',
+      category_id: '',
+      description: '',
+      date: todayIso(),
+      payment_method: '',
+      is_variable: false,
+      account_id: '',
+      is_installment: false,
+      installments: '2',
+      notes: '',
+    }
   }
   return {
     type: t.type,
@@ -29,6 +43,8 @@ function toValues(t?: Transaction | null): TransactionFormValues {
     payment_method: t.payment_method ?? '',
     is_variable: t.is_variable,
     account_id: t.account_id ?? '',
+    is_installment: false,
+    installments: '2',
     notes: t.notes ?? '',
   }
 }
@@ -57,6 +73,10 @@ export function TransactionForm({
     setError(null)
     if (!values.amount || Number(values.amount) <= 0) {
       setError('Informe um valor válido.')
+      return
+    }
+    if (values.is_installment && (!values.installments || Number(values.installments) < 2 || Number(values.installments) > 60)) {
+      setError('Informe um número de parcelas entre 2 e 60.')
       return
     }
     setSaving(true)
@@ -90,7 +110,7 @@ export function TransactionForm({
         </button>
       </div>
 
-      <FormField label="Valor (R$)">
+      <FormField label={values.is_installment ? 'Valor total da compra (R$)' : 'Valor (R$)'}>
         <TextInput
           type="number"
           inputMode="decimal"
@@ -103,6 +123,44 @@ export function TransactionForm({
           placeholder="0,00"
         />
       </FormField>
+
+      {!initial && values.type === 'expense' && (
+        <div className="mb-3 rounded-lg border border-cyan-500/20 bg-[#0a1120]/60 p-3">
+          <label className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={values.is_installment}
+              onChange={(e) => setValues((v) => ({ ...v, is_installment: e.target.checked }))}
+              className="h-4 w-4 accent-cyan-400"
+            />
+            <span className="text-sm text-slate-300">Compra parcelada?</span>
+          </label>
+
+          {values.is_installment && (
+            <div className="mt-3">
+              <FormField label="Número de parcelas">
+                <TextInput
+                  type="number"
+                  inputMode="numeric"
+                  min="2"
+                  max="60"
+                  value={values.installments}
+                  onChange={(e) => setValues((v) => ({ ...v, installments: e.target.value }))}
+                />
+              </FormField>
+              {Number(values.amount) > 0 && Number(values.installments) >= 2 && (
+                <p className="text-xs text-slate-500">
+                  {values.installments}x de{' '}
+                  <span className="font-medium text-cyan-300">
+                    {(Number(values.amount) / Number(values.installments)).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                  </span>{' '}
+                  — a primeira parcela entra na data escolhida abaixo, as próximas nos meses seguintes.
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+      )}
 
       <FormField label="Descrição">
         <TextInput

@@ -1,8 +1,11 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { useCategories } from '../hooks/useCategories'
+import { useCategoryBudgets } from '../hooks/useCategoryBudgets'
+import { supabase } from '../lib/supabase'
 import { Modal } from '../components/Modal'
 import { ErrorText, FormField, PrimaryButton, TextInput } from '../components/FormField'
+import { formatCurrency, currentMonthRange } from '../lib/format'
 import type { Category, TransactionType } from '../types/database'
 
 const ICON_OPTIONS = ['💰', '🏠', '🛒', '🚗', '🍔', '💊', '📚', '🎮', '📺', '🛍️', '💡', '💇', '🐾', '✈️', '🧾', '📦', '💼', '💻', '🎁', '🏷️', '↩️', '📈', '⚡', '🎵', '☕']
@@ -11,9 +14,31 @@ const COLOR_OPTIONS = ['#22c55e', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#
 export function Categories() {
   const { user } = useAuth()
   const { categories, create, update, remove } = useCategories(user?.id)
+  const { budgetFor, setBudget, removeBudget } = useCategoryBudgets(user?.id)
   const [tab, setTab] = useState<TransactionType>('expense')
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState<Category | null>(null)
+  const [spentByCategory, setSpentByCategory] = useState<Map<string, number>>(new Map())
+
+  useEffect(() => {
+    if (!user) return
+    const { start, end } = currentMonthRange()
+    supabase
+      .from('transactions')
+      .select('category_id, amount')
+      .eq('user_id', user.id)
+      .eq('type', 'expense')
+      .gte('date', start)
+      .lte('date', end)
+      .then(({ data }) => {
+        const map = new Map<string, number>()
+        for (const row of data ?? []) {
+          if (!row.category_id) continue
+          map.set(row.category_id, (map.get(row.category_id) ?? 0) + Number(row.amount))
+        }
+        setSpentByCategory(map)
+      })
+  }, [user])
 
   const filtered = categories.filter((c) => c.type === tab)
 
@@ -56,25 +81,45 @@ export function Categories() {
       </div>
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-        {filtered.map((c) => (
-          <div key={c.id} className="flex items-center justify-between gap-2 hud-panel p-3">
-            <button
-              onClick={() => {
-                setEditing(c)
-                setModalOpen(true)
-              }}
-              className="flex flex-1 items-center gap-2 text-left"
-            >
-              <span className="flex h-8 w-8 items-center justify-center rounded-full text-lg" style={{ background: `${c.color}22` }}>
-                {c.icon}
-              </span>
-              <span className="truncate text-sm text-slate-200">{c.name}</span>
-            </button>
-            <button onClick={() => handleDelete(c)} className="rounded p-1 text-slate-500 hover:text-rose-400" aria-label="Excluir">
-              🗑️
-            </button>
-          </div>
-        ))}
+        {filtered.map((c) => {
+          const budget = tab === 'expense' ? budgetFor(c.id) : null
+          const spent = spentByCategory.get(c.id) ?? 0
+          const pct = budget ? Math.min(100, (spent / budget.monthly_limit) * 100) : 0
+          return (
+            <div key={c.id} className="hud-panel p-3">
+              <div className="flex items-center justify-between gap-2">
+                <button
+                  onClick={() => {
+                    setEditing(c)
+                    setModalOpen(true)
+                  }}
+                  className="flex flex-1 items-center gap-2 text-left"
+                >
+                  <span className="flex h-8 w-8 items-center justify-center rounded-full text-lg" style={{ background: `${c.color}22` }}>
+                    {c.icon}
+                  </span>
+                  <span className="truncate text-sm text-slate-200">{c.name}</span>
+                </button>
+                <button onClick={() => handleDelete(c)} className="rounded p-1 text-slate-500 hover:text-rose-400" aria-label="Excluir">
+                  🗑️
+                </button>
+              </div>
+              {budget && (
+                <div className="mt-2">
+                  <div className="h-1.5 overflow-hidden rounded-full bg-[#0a1120]">
+                    <div
+                      className={`h-full rounded-full transition-all ${pct >= 100 ? 'bg-rose-500' : pct >= 80 ? 'bg-amber-400' : 'bg-cyan-400'}`}
+                      style={{ width: `${pct}%` }}
+                    />
+                  </div>
+                  <p className={`mt-1 text-[10px] ${pct >= 100 ? 'text-rose-400' : 'text-slate-500'}`}>
+                    {formatCurrency(spent)} de {formatCurrency(budget.monthly_limit)}
+                  </p>
+                </div>
+              )}
+            </div>
+          )
+        })}
       </div>
 
       {modalOpen && (
@@ -82,10 +127,19 @@ export function Categories() {
           <CategoryForm
             initial={editing}
             type={tab}
+            currentBudget={editing ? budgetFor(editing.id) : null}
             onCancel={() => setModalOpen(false)}
             onSubmit={async (values) => {
               const result = editing ? await update(editing.id, values) : await create({ ...values, type: tab })
-              if (!result.error) setModalOpen(false)
+              if (result.error) return result
+
+              const categoryId = editing?.id
+              if (tab === 'expense' && categoryId) {
+                if (values.budget && Number(values.budget) > 0) await setBudget(categoryId, Number(values.budget))
+                else await removeBudget(categoryId)
+              }
+
+              setModalOpen(false)
               return result
             }}
           />
@@ -98,17 +152,20 @@ export function Categories() {
 function CategoryForm({
   initial,
   type,
+  currentBudget,
   onCancel,
   onSubmit,
 }: {
   initial?: Category | null
   type: TransactionType
+  currentBudget: { monthly_limit: number } | null
   onCancel: () => void
-  onSubmit: (values: { name: string; color: string; icon: string }) => Promise<{ error: string | null }>
+  onSubmit: (values: { name: string; color: string; icon: string; budget: string }) => Promise<{ error: string | null }>
 }) {
   const [name, setName] = useState(initial?.name ?? '')
   const [color, setColor] = useState(initial?.color ?? COLOR_OPTIONS[0])
   const [icon, setIcon] = useState(initial?.icon ?? ICON_OPTIONS[0])
+  const [budget, setBudgetValue] = useState(currentBudget ? String(currentBudget.monthly_limit) : '')
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
 
@@ -120,7 +177,7 @@ function CategoryForm({
       return
     }
     setSaving(true)
-    const result = await onSubmit({ name: name.trim(), color, icon })
+    const result = await onSubmit({ name: name.trim(), color, icon, budget })
     setSaving(false)
     if (result.error) setError(result.error)
   }
@@ -161,6 +218,20 @@ function CategoryForm({
           ))}
         </div>
       </FormField>
+
+      {type === 'expense' && initial && (
+        <FormField label="Orçamento mensal (opcional)">
+          <TextInput
+            type="number"
+            inputMode="decimal"
+            step="0.01"
+            min="0"
+            value={budget}
+            onChange={(e) => setBudgetValue(e.target.value)}
+            placeholder="Ex: 600 — deixe em branco pra não limitar"
+          />
+        </FormField>
+      )}
 
       <div className="mt-4 flex gap-2">
         <button type="button" onClick={onCancel} className="w-full rounded-lg border border-cyan-500/20 px-4 py-2.5 font-medium text-slate-300 hover:bg-cyan-500/10">

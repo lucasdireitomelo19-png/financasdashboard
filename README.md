@@ -32,6 +32,10 @@ entre os dois — o que você lançar em um aparelho aparece no outro.
    você pode desativar a confirmação por e-mail ("Confirm email") se quiser
    entrar imediatamente após criar a conta, sem precisar clicar em um link de
    confirmação.
+7. Para o **"Esqueci minha senha"** funcionar depois de publicar o app: vá em
+   **Authentication** → **URL Configuration** e adicione a URL do seu app
+   publicado (ex: `https://seu-app.vercel.app/**`) em **Redirect URLs**. Sem
+   isso, o link do e-mail de recuperação não confirma a sessão corretamente.
 
 ## 2. Configurar o projeto localmente
 
@@ -114,8 +118,20 @@ janela própria, sem as abas do navegador.
   (VR/VA) com crédito mensal, saldo disponível e ciclo próprios. Lançamentos
   podem ser ligados a uma conta para entrar automaticamente na fatura/saldo
   certos.
-- **Dashboard**: saldo do mês, entradas x saídas, gastos por categoria e
-  evolução dos últimos 6 meses.
+- **Compras parceladas**: marque um gasto como parcelado (2x a 60x) e o app
+  gera automaticamente cada parcela no mês certo, ligadas entre si.
+- **Orçamento por categoria**: defina um limite mensal opcional por categoria
+  de gasto, com barra de progresso e alerta ao se aproximar/estourar.
+- **Metas de economia**: crie metas (viagem, reserva, o que for) e registre
+  aportes/retiradas, acompanhando o progresso até o valor-alvo.
+- **Insights automáticos**: comparação de gastos por categoria mês a mês e
+  detecção de lançamentos fora do padrão, gerados por regras a partir dos
+  seus dados (sem IA).
+- **Dashboard/cockpit**: patrimônio líquido (investimentos + saldo VR −
+  parcelas futuras comprometidas) com projeção dos próximos meses baseada na
+  sua taxa de poupança real, saldo do mês, entradas x saídas, gastos por
+  categoria e evolução dos últimos 6 meses.
+- **Recuperar senha**: fluxo completo de "esqueci minha senha" por e-mail.
 - **Sincronizado**: como os dados ficam no Supabase (nuvem), tudo que você
   lança no PC aparece no iPhone e vice-versa.
 
@@ -145,6 +161,9 @@ Resumo das tabelas:
 - `payment_accounts` — cartões de crédito e vales (VR/VA)
 - `credit_card_bill_payments` — marca se a fatura de um determinado ciclo do
   cartão já foi paga
+- `category_budgets` — limite mensal opcional por categoria
+- `savings_goals` / `savings_goal_contributions` — metas de economia e seus
+  aportes/retiradas
 
 Todas as tabelas têm Row Level Security (RLS) habilitado: cada usuário só
 consegue ler e escrever seus próprios dados.

@@ -10,13 +10,14 @@ import { INVESTMENT_CATEGORY_COLORS, INVESTMENT_CATEGORY_LABELS, INVESTMENT_MOVE
 import { AnimatedNumber } from '../components/AnimatedNumber'
 import { TiltCard } from '../components/TiltCard'
 import { Recommendations } from '../components/Recommendations'
+import { SavingsGoals } from '../components/SavingsGoals'
 import type { Investment } from '../types/database'
 
 export function Investments() {
   const { user } = useAuth()
   const { investments, movementsFor, create, update, remove, addMovement, removeMovement } = useInvestments(user?.id)
 
-  const [tab, setTab] = useState<'carteira' | 'recomendacoes'>('carteira')
+  const [tab, setTab] = useState<'carteira' | 'recomendacoes' | 'metas'>('carteira')
   const [formModal, setFormModal] = useState<'closed' | 'create' | 'edit'>('closed')
   const [editing, setEditing] = useState<Investment | null>(null)
   const [movementTarget, setMovementTarget] = useState<InvestmentWithTotals | null>(null)
@@ -111,26 +112,35 @@ export function Investments() {
         )}
       </div>
 
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-3 gap-2">
         <button
           onClick={() => setTab('carteira')}
-          className={`rounded-lg border px-3 py-2.5 font-display text-xs font-semibold uppercase tracking-wider transition ${
+          className={`rounded-lg border px-2 py-2.5 font-display text-[11px] font-semibold uppercase tracking-wider transition ${
             tab === 'carteira' ? 'border-cyan-400/50 bg-cyan-400/10 text-cyan-200 shadow-[0_0_16px_-6px_rgba(34,224,255,0.7)]' : 'border-cyan-500/20 text-slate-400'
           }`}
         >
           📊 Carteira
         </button>
         <button
+          onClick={() => setTab('metas')}
+          className={`rounded-lg border px-2 py-2.5 font-display text-[11px] font-semibold uppercase tracking-wider transition ${
+            tab === 'metas' ? 'border-cyan-400/50 bg-cyan-400/10 text-cyan-200 shadow-[0_0_16px_-6px_rgba(34,224,255,0.7)]' : 'border-cyan-500/20 text-slate-400'
+          }`}
+        >
+          🎯 Metas
+        </button>
+        <button
           onClick={() => setTab('recomendacoes')}
-          className={`rounded-lg border px-3 py-2.5 font-display text-xs font-semibold uppercase tracking-wider transition ${
+          className={`rounded-lg border px-2 py-2.5 font-display text-[11px] font-semibold uppercase tracking-wider transition ${
             tab === 'recomendacoes' ? 'border-cyan-400/50 bg-cyan-400/10 text-cyan-200 shadow-[0_0_16px_-6px_rgba(34,224,255,0.7)]' : 'border-cyan-500/20 text-slate-400'
           }`}
         >
-          🧭 Recomendações
+          🧭 Dicas
         </button>
       </div>
 
       {tab === 'recomendacoes' && <Recommendations userId={user?.id} investments={investments} />}
+      {tab === 'metas' && <SavingsGoals userId={user?.id} />}
 
       {tab === 'carteira' && (
         <>

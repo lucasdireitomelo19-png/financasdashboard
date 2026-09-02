@@ -1,5 +1,5 @@
 import { format } from 'date-fns'
-import type { PaymentAccount } from '../types/database'
+import type { PaymentAccount, Transaction } from '../types/database'
 
 export interface CreditCardCycle {
   /** primeiro dia do ciclo (dia seguinte ao fechamento anterior) */
@@ -83,4 +83,15 @@ export function cycleRangeIso(cycle: { start: Date; end: Date }): { start: strin
 
 export function dateToIso(d: Date): string {
   return toIso(d)
+}
+
+/** Saldo disponível de uma conta tipo "vale" no ciclo atual (crédito mensal
+ * menos o que já foi gasto nela desde o último crédito). */
+export function computeVrBalance(account: PaymentAccount, transactions: Transaction[], today = new Date()): number {
+  const cycle = currentVrCycle(account, today)
+  const { start, end } = cycleRangeIso(cycle)
+  const spent = transactions
+    .filter((t) => t.account_id === account.id && t.type === 'expense' && t.date >= start && t.date <= end)
+    .reduce((s, t) => s + Number(t.amount), 0)
+  return Number(account.monthly_credit ?? 0) - spent
 }

@@ -7,9 +7,13 @@ interface AuthContextValue {
   session: Session | null
   user: User | null
   loading: boolean
+  /** true quando o usuário chegou aqui pelo link de recuperação de senha do e-mail */
+  passwordRecovery: boolean
   signIn: (email: string, password: string) => Promise<{ error: string | null }>
   signUp: (email: string, password: string) => Promise<{ error: string | null }>
   signOut: () => Promise<void>
+  requestPasswordReset: (email: string) => Promise<{ error: string | null }>
+  updatePassword: (newPassword: string) => Promise<{ error: string | null }>
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined)
@@ -29,6 +33,7 @@ async function ensureDefaultCategories(userId: string) {
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
+  const [passwordRecovery, setPasswordRecovery] = useState(false)
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -36,8 +41,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(false)
     })
 
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, newSession) => {
+    const { data: listener } = supabase.auth.onAuthStateChange((event, newSession) => {
       setSession(newSession)
+      if (event === 'PASSWORD_RECOVERY') {
+        setPasswordRecovery(true)
+      }
       if (newSession?.user) {
         void ensureDefaultCategories(newSession.user.id)
       }
@@ -63,8 +71,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await supabase.auth.signOut()
   }
 
+  const requestPasswordReset: AuthContextValue['requestPasswordReset'] = async (email) => {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/redefinir-senha`,
+    })
+    return { error: error ? traduzErro(error.message) : null }
+  }
+
+  const updatePassword: AuthContextValue['updatePassword'] = async (newPassword) => {
+    const { error } = await supabase.auth.updateUser({ password: newPassword })
+    if (!error) setPasswordRecovery(false)
+    return { error: error ? traduzErro(error.message) : null }
+  }
+
   return (
-    <AuthContext.Provider value={{ session, user: session?.user ?? null, loading, signIn, signUp, signOut }}>
+    <AuthContext.Provider
+      value={{ session, user: session?.user ?? null, loading, passwordRecovery, signIn, signUp, signOut, requestPasswordReset, updatePassword }}
+    >
       {children}
     </AuthContext.Provider>
   )
@@ -75,6 +98,7 @@ function traduzErro(message: string): string {
   if (message.includes('User already registered')) return 'Este e-mail já está cadastrado.'
   if (message.includes('Password should be at least')) return 'A senha deve ter pelo menos 6 caracteres.'
   if (message.includes('Unable to validate email address')) return 'E-mail inválido.'
+  if (message.includes('rate limit')) return 'Muitas tentativas. Aguarde um pouco antes de tentar de novo.'
   return message
 }
 

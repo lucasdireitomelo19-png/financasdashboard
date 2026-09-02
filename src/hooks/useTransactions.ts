@@ -45,6 +45,14 @@ export function useTransactions(userId: string | undefined, filters: Transaction
     return { error: error?.message ?? null }
   }
 
+  const createMany = async (inputs: Omit<Transaction, 'id' | 'created_at' | 'user_id'>[]) => {
+    if (!userId) return { error: 'Sem usuário' }
+    const rows = inputs.map((input) => ({ ...input, user_id: userId }))
+    const { error } = await supabase.from('transactions').insert(rows)
+    if (!error) await refetch()
+    return { error: error?.message ?? null }
+  }
+
   const update = async (id: string, input: Partial<Omit<Transaction, 'id' | 'user_id'>>) => {
     const { error } = await supabase.from('transactions').update(input).eq('id', id)
     if (!error) await refetch()
@@ -57,5 +65,11 @@ export function useTransactions(userId: string | undefined, filters: Transaction
     return { error: error?.message ?? null }
   }
 
-  return { transactions, loading, refetch, create, update, remove }
+  const removeInstallmentGroup = async (groupId: string) => {
+    const { error } = await supabase.from('transactions').delete().eq('installment_group_id', groupId)
+    if (!error) await refetch()
+    return { error: error?.message ?? null }
+  }
+
+  return { transactions, loading, refetch, create, createMany, update, remove, removeInstallmentGroup }
 }

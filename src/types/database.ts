@@ -57,6 +57,9 @@ export interface Transaction {
   is_variable: boolean
   recurring_template_id: string | null
   account_id: string | null
+  installment_group_id: string | null
+  installment_number: number | null
+  installment_total: number | null
   notes: string | null
   created_at: string
 }
@@ -115,4 +118,34 @@ export interface InvestorProfile {
   score: number
   answers: Record<string, number> | null
   updated_at: string
+}
+
+export interface CategoryBudget {
+  id: string
+  user_id: string
+  category_id: string
+  monthly_limit: number
+  created_at: string
+}
+
+export interface SavingsGoal {
+  id: string
+  user_id: string
+  name: string
+  target_amount: number
+  target_date: string | null
+  color: string
+  icon: string
+  archived: boolean
+  created_at: string
+}
+
+export interface SavingsGoalContribution {
+  id: string
+  goal_id: string
+  user_id: string
+  amount: number
+  date: string
+  notes: string | null
+  created_at: string
 }
