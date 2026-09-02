@@ -78,11 +78,15 @@ export function Dashboard() {
 
   const income = currentMonthTx.filter((t) => t.type === 'income').reduce((s, t) => s + Number(t.amount), 0)
   const expense = currentMonthTx.filter((t) => t.type === 'expense').reduce((s, t) => s + Number(t.amount), 0)
-  const balance = income - expense
+  const cashBalance = income - expense
 
   const totalInvested = investments.reduce((s, i) => s + i.currentValue, 0)
   const vrBalance = accounts.filter((a) => a.type === 'vale' && !a.archived).reduce((s, a) => s + computeVrBalance(a, transactions, now), 0)
-  const netWorth = totalInvested + vrBalance - futureInstallmentsTotal
+  // patrimônio líquido = só o que é acumulado de verdade (investimentos menos
+  // compromissos futuros). VR não entra aqui: é um benefício que se renova
+  // todo mês, então conta como saldo disponível do mês, não como patrimônio.
+  const netWorth = totalInvested - futureInstallmentsTotal
+  const balance = cashBalance + vrBalance
 
   const categoryMap = useMemo(() => new Map(categories.map((c) => [c.id, c])), [categories])
 
@@ -156,7 +160,7 @@ export function Dashboard() {
             {loading || loadingInvestments ? '···' : <AnimatedNumber value={netWorth} format={formatCurrency} />}
           </p>
           <p className="mt-1 text-xs text-slate-500">
-            investimentos ({formatCurrency(totalInvested)}) + saldo VR ({formatCurrency(vrBalance)}) − parcelas futuras comprometidas ({formatCurrency(futureInstallmentsTotal)})
+            investimentos ({formatCurrency(totalInvested)}) − parcelas futuras comprometidas ({formatCurrency(futureInstallmentsTotal)})
           </p>
 
           {avgMonthlySavings !== 0 && (
@@ -183,7 +187,13 @@ export function Dashboard() {
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <StatCard label="Entradas" value={income} color="text-emerald-400" loading={loading} />
         <StatCard label="Saídas" value={expense} color="text-rose-400" loading={loading} />
-        <StatCard label="Saldo do mês" value={balance} color={balance >= 0 ? 'text-emerald-400' : 'text-rose-400'} loading={loading} />
+        <StatCard
+          label="Saldo do mês"
+          value={balance}
+          color={balance >= 0 ? 'text-emerald-400' : 'text-rose-400'}
+          loading={loading}
+          hint={vrBalance > 0 ? `entradas − saídas + VR (${formatCurrency(vrBalance)})` : undefined}
+        />
         <StatCard label="Patrimônio investido" value={totalInvested} color="text-cyan-300" loading={loadingInvestments} />
       </div>
 
@@ -282,7 +292,7 @@ export function Dashboard() {
   )
 }
 
-function StatCard({ label, value, color, loading }: { label: string; value: number; color: string; loading: boolean }) {
+function StatCard({ label, value, color, loading, hint }: { label: string; value: number; color: string; loading: boolean; hint?: string }) {
   return (
     <TiltCard>
       <div className="hud-panel h-full p-4">
@@ -290,6 +300,7 @@ function StatCard({ label, value, color, loading }: { label: string; value: numb
         <p className={`glow-text mt-1 font-display text-lg font-bold ${color}`}>
           {loading ? '···' : <AnimatedNumber value={value} format={formatCurrency} />}
         </p>
+        {hint && <p className="mt-1 text-[10px] text-slate-500">{hint}</p>}
       </div>
     </TiltCard>
   )
