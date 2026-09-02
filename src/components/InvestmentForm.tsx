@@ -102,7 +102,7 @@ export function InvestmentForm({
       </FormField>
 
       <div className="mt-4 flex gap-2">
-        <button type="button" onClick={onCancel} className="w-full rounded-lg border border-slate-700 px-4 py-2.5 font-medium text-slate-300 hover:bg-slate-800">
+        <button type="button" onClick={onCancel} className="w-full rounded-lg border border-cyan-500/20 px-4 py-2.5 font-medium text-slate-300 hover:bg-cyan-500/10">
           Cancelar
         </button>
         <PrimaryButton type="submit" disabled={saving}>

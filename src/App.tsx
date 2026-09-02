@@ -1,6 +1,7 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import { Layout } from './components/Layout'
+import { LoadingReactor } from './components/LoadingReactor'
 import { Login } from './pages/Login'
 import { Dashboard } from './pages/Dashboard'
 import { Transactions } from './pages/Transactions'
@@ -12,11 +13,7 @@ function AppRoutes() {
   const { session, loading } = useAuth()
 
   if (loading) {
-    return (
-      <div className="flex min-h-dvh items-center justify-center text-slate-400">
-        <p>Carregando...</p>
-      </div>
-    )
+    return <LoadingReactor />
   }
 
   if (!session) {

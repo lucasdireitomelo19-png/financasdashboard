@@ -3,14 +3,14 @@ import type { ReactNode } from 'react'
 export function FormField({ label, children }: { label: string; children: ReactNode }) {
   return (
     <label className="mb-3 block">
-      <span className="mb-1 block text-sm font-medium text-slate-300">{label}</span>
+      <span className="mb-1.5 block font-display text-[11px] font-medium uppercase tracking-wider text-cyan-300/70">{label}</span>
       {children}
     </label>
   )
 }
 
 const baseInput =
-  'w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2.5 text-slate-100 outline-none placeholder:text-slate-500 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500'
+  'w-full rounded-lg border border-cyan-500/20 bg-[#0a1120]/80 px-3 py-2.5 text-slate-100 outline-none placeholder:text-slate-600 transition-all focus:border-cyan-400/70 focus:shadow-[0_0_0_1px_rgba(34,224,255,0.4),0_0_16px_-2px_rgba(34,224,255,0.5)]'
 
 export function TextInput(props: React.InputHTMLAttributes<HTMLInputElement>) {
   return <input {...props} className={`${baseInput} ${props.className ?? ''}`} />
@@ -28,7 +28,7 @@ export function PrimaryButton(props: React.ButtonHTMLAttributes<HTMLButtonElemen
   return (
     <button
       {...props}
-      className={`w-full rounded-lg bg-emerald-600 px-4 py-2.5 font-medium text-white transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-50 ${props.className ?? ''}`}
+      className={`w-full rounded-lg bg-gradient-to-r from-cyan-500 to-cyan-400 px-4 py-2.5 font-display text-sm font-bold uppercase tracking-wider text-[#031018] shadow-[0_0_20px_-4px_rgba(34,224,255,0.8)] transition hover:from-cyan-400 hover:to-cyan-300 hover:shadow-[0_0_28px_-4px_rgba(34,224,255,0.95)] disabled:cursor-not-allowed disabled:opacity-50 ${props.className ?? ''}`}
     />
   )
 }
@@ -37,12 +37,12 @@ export function SecondaryButton(props: React.ButtonHTMLAttributes<HTMLButtonElem
   return (
     <button
       {...props}
-      className={`w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-2.5 font-medium text-slate-200 transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-50 ${props.className ?? ''}`}
+      className={`w-full rounded-lg border border-cyan-500/25 bg-[#0a1120]/70 px-4 py-2.5 font-display text-sm font-medium uppercase tracking-wider text-cyan-100/80 transition hover:border-cyan-400/50 hover:bg-cyan-500/10 disabled:cursor-not-allowed disabled:opacity-50 ${props.className ?? ''}`}
     />
   )
 }
 
 export function ErrorText({ children }: { children: ReactNode }) {
   if (!children) return null
-  return <p className="mb-3 rounded-lg bg-red-500/10 px-3 py-2 text-sm text-red-400">{children}</p>
+  return <p className="mb-3 rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-sm text-rose-300">{children}</p>
 }

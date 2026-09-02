@@ -30,8 +30,8 @@ export function Categories() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold text-slate-100">Categorias</h1>
-        <button onClick={openCreate} className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-500">
+        <h1 className="font-display text-lg font-bold uppercase tracking-wider text-cyan-100">Categorias</h1>
+        <button onClick={openCreate} className="rounded-lg bg-gradient-to-r from-cyan-500 to-cyan-400 px-4 py-2 font-display text-xs font-bold uppercase tracking-wider text-[#031018] shadow-[0_0_20px_-4px_rgba(34,224,255,0.8)] transition hover:from-cyan-400 hover:to-cyan-300">
           + Nova
         </button>
       </div>
@@ -40,7 +40,7 @@ export function Categories() {
         <button
           onClick={() => setTab('expense')}
           className={`rounded-lg border px-3 py-2.5 text-sm font-medium transition ${
-            tab === 'expense' ? 'border-red-500 bg-red-500/10 text-red-400' : 'border-slate-700 text-slate-400'
+            tab === 'expense' ? 'border-rose-500 bg-rose-500/10 text-rose-400' : 'border-cyan-500/20 text-slate-400'
           }`}
         >
           💸 Gastos
@@ -48,7 +48,7 @@ export function Categories() {
         <button
           onClick={() => setTab('income')}
           className={`rounded-lg border px-3 py-2.5 text-sm font-medium transition ${
-            tab === 'income' ? 'border-emerald-500 bg-emerald-500/10 text-emerald-400' : 'border-slate-700 text-slate-400'
+            tab === 'income' ? 'border-emerald-500 bg-emerald-500/10 text-emerald-400' : 'border-cyan-500/20 text-slate-400'
           }`}
         >
           💰 Entradas
@@ -57,7 +57,7 @@ export function Categories() {
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
         {filtered.map((c) => (
-          <div key={c.id} className="flex items-center justify-between gap-2 rounded-2xl border border-slate-800 bg-slate-900 p-3">
+          <div key={c.id} className="flex items-center justify-between gap-2 hud-panel p-3">
             <button
               onClick={() => {
                 setEditing(c)
@@ -70,7 +70,7 @@ export function Categories() {
               </span>
               <span className="truncate text-sm text-slate-200">{c.name}</span>
             </button>
-            <button onClick={() => handleDelete(c)} className="rounded p-1 text-slate-500 hover:text-red-400" aria-label="Excluir">
+            <button onClick={() => handleDelete(c)} className="rounded p-1 text-slate-500 hover:text-rose-400" aria-label="Excluir">
               🗑️
             </button>
           </div>
@@ -140,7 +140,7 @@ function CategoryForm({
               key={opt}
               type="button"
               onClick={() => setIcon(opt)}
-              className={`flex h-9 w-9 items-center justify-center rounded-lg text-lg ${icon === opt ? 'bg-emerald-600/30 ring-1 ring-emerald-500' : 'bg-slate-800'}`}
+              className={`flex h-9 w-9 items-center justify-center rounded-lg text-lg ${icon === opt ? 'bg-cyan-500/25 ring-1 ring-cyan-400' : 'bg-[#0a1120]/70'}`}
             >
               {opt}
             </button>
@@ -155,7 +155,7 @@ function CategoryForm({
               key={opt}
               type="button"
               onClick={() => setColor(opt)}
-              className={`h-8 w-8 rounded-full ${color === opt ? 'ring-2 ring-offset-2 ring-offset-slate-900 ring-emerald-500' : ''}`}
+              className={`h-8 w-8 rounded-full ${color === opt ? 'ring-2 ring-offset-2 ring-offset-[#050810] ring-cyan-400' : ''}`}
               style={{ background: opt }}
             />
           ))}
@@ -163,7 +163,7 @@ function CategoryForm({
       </FormField>
 
       <div className="mt-4 flex gap-2">
-        <button type="button" onClick={onCancel} className="w-full rounded-lg border border-slate-700 px-4 py-2.5 font-medium text-slate-300 hover:bg-slate-800">
+        <button type="button" onClick={onCancel} className="w-full rounded-lg border border-cyan-500/20 px-4 py-2.5 font-medium text-slate-300 hover:bg-cyan-500/10">
           Cancelar
         </button>
         <PrimaryButton type="submit" disabled={saving}>

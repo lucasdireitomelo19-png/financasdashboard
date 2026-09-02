@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useAuth } from '../context/AuthContext'
-import { ErrorText, PrimaryButton, TextInput } from '../components/FormField'
+import { ErrorText, FormField, PrimaryButton, TextInput } from '../components/FormField'
+import { ArcReactor } from '../components/ArcReactor'
 import { isSupabaseConfigured } from '../lib/supabase'
 
 export function Login() {
@@ -29,40 +30,42 @@ export function Login() {
   return (
     <div className="flex min-h-dvh items-center justify-center px-4">
       <div className="w-full max-w-sm">
-        <div className="mb-8 text-center">
-          <div className="mb-2 text-4xl">💰</div>
-          <h1 className="text-xl font-semibold text-slate-100">Finanças Dashboard</h1>
+        <div className="mb-8 flex flex-col items-center text-center">
+          <div className="mb-3">
+            <ArcReactor size={52} />
+          </div>
+          <h1 className="font-display text-lg font-bold uppercase tracking-[0.15em] text-cyan-100">Finanças Dashboard</h1>
           <p className="mt-1 text-sm text-slate-400">Sua vida financeira em um só lugar</p>
         </div>
 
         {!isSupabaseConfigured && (
-          <p className="mb-4 rounded-lg bg-amber-500/10 px-3 py-2 text-sm text-amber-400">
+          <p className="mb-4 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-sm text-amber-300">
             Supabase ainda não configurado neste ambiente. Crie um arquivo <code>.env</code> com suas chaves (veja{' '}
             <code>.env.example</code> e o README) para poder entrar.
           </p>
         )}
 
-        <form onSubmit={handleSubmit} className="rounded-2xl border border-slate-800 bg-slate-900 p-5">
+        <form onSubmit={handleSubmit} className="hud-panel p-5">
           <ErrorText>{error}</ErrorText>
-          {info && <p className="mb-3 rounded-lg bg-emerald-500/10 px-3 py-2 text-sm text-emerald-400">{info}</p>}
+          {info && <p className="mb-3 rounded-lg border border-cyan-500/30 bg-cyan-500/10 px-3 py-2 text-sm text-cyan-200">{info}</p>}
 
-          <label className="mb-3 block">
-            <span className="mb-1 block text-sm font-medium text-slate-300">E-mail</span>
+          <FormField label="E-mail">
             <TextInput type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="voce@email.com" autoComplete="email" />
-          </label>
+          </FormField>
 
-          <label className="mb-4 block">
-            <span className="mb-1 block text-sm font-medium text-slate-300">Senha</span>
-            <TextInput
-              type="password"
-              required
-              minLength={6}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}
-            />
-          </label>
+          <div className="mb-4">
+            <FormField label="Senha">
+              <TextInput
+                type="password"
+                required
+                minLength={6}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}
+              />
+            </FormField>
+          </div>
 
           <PrimaryButton type="submit" disabled={loading}>
             {loading ? 'Aguarde...' : mode === 'signin' ? 'Entrar' : 'Criar conta'}
@@ -75,7 +78,7 @@ export function Login() {
               setError(null)
               setInfo(null)
             }}
-            className="mt-4 w-full text-center text-sm text-slate-400 hover:text-emerald-400"
+            className="mt-4 w-full text-center text-sm text-slate-400 hover:text-cyan-300"
           >
             {mode === 'signin' ? 'Não tem conta? Criar agora' : 'Já tem conta? Entrar'}
           </button>

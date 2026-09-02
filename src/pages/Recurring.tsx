@@ -6,6 +6,8 @@ import { Modal } from '../components/Modal'
 import { RecurringForm, type RecurringFormValues } from '../components/RecurringForm'
 import { formatCurrency, formatDate, todayIso } from '../lib/format'
 import { nextOccurrenceAfter } from '../lib/recurrence'
+import { AnimatedNumber } from '../components/AnimatedNumber'
+import { TiltCard } from '../components/TiltCard'
 import type { RecurringTemplate } from '../types/database'
 
 const FREQ_LABELS: Record<string, string> = { weekly: 'Semanal', monthly: 'Mensal', yearly: 'Anual' }
@@ -72,8 +74,8 @@ export function Recurring() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold text-slate-100">Recorrentes</h1>
-        <button onClick={openCreate} className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-500">
+        <h1 className="font-display text-lg font-bold uppercase tracking-wider text-cyan-100">Recorrentes</h1>
+        <button onClick={openCreate} className="rounded-lg bg-gradient-to-r from-cyan-500 to-cyan-400 px-4 py-2 font-display text-xs font-bold uppercase tracking-wider text-[#031018] shadow-[0_0_20px_-4px_rgba(34,224,255,0.8)] transition hover:from-cyan-400 hover:to-cyan-300">
           + Novo
         </button>
       </div>
@@ -82,14 +84,22 @@ export function Recurring() {
       </p>
 
       <div className="grid grid-cols-2 gap-3">
-        <div className="rounded-2xl border border-slate-800 bg-slate-900 p-3 text-center">
-          <p className="text-xs text-slate-400">Entradas fixas / mês (aprox.)</p>
-          <p className="mt-0.5 text-sm font-semibold text-emerald-400">{formatCurrency(monthlyIncomeTotal)}</p>
-        </div>
-        <div className="rounded-2xl border border-slate-800 bg-slate-900 p-3 text-center">
-          <p className="text-xs text-slate-400">Gastos fixos / mês (aprox.)</p>
-          <p className="mt-0.5 text-sm font-semibold text-red-400">{formatCurrency(monthlyExpenseTotal)}</p>
-        </div>
+        <TiltCard>
+          <div className="hud-panel h-full p-3 text-center">
+            <p className="font-display text-[10px] uppercase tracking-wider text-slate-500">Entradas fixas / mês (aprox.)</p>
+            <p className="glow-text mt-0.5 font-display text-sm font-bold text-emerald-400">
+              <AnimatedNumber value={monthlyIncomeTotal} format={formatCurrency} />
+            </p>
+          </div>
+        </TiltCard>
+        <TiltCard>
+          <div className="hud-panel h-full p-3 text-center">
+            <p className="font-display text-[10px] uppercase tracking-wider text-slate-500">Gastos fixos / mês (aprox.)</p>
+            <p className="glow-text mt-0.5 font-display text-sm font-bold text-rose-400">
+              <AnimatedNumber value={monthlyExpenseTotal} format={formatCurrency} />
+            </p>
+          </div>
+        </TiltCard>
       </div>
 
       <TemplateSection title="Entradas recorrentes" items={fixedIncomes} categoryMap={categoryMap} today={today} onEdit={openEdit} onDelete={handleDelete} onToggle={toggleActive} />
@@ -122,12 +132,12 @@ function TemplateSection({
   onToggle: (t: RecurringTemplate) => void
 }) {
   return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-900 p-4">
-      <h2 className="mb-3 text-sm font-medium text-slate-300">{title}</h2>
+    <div className="hud-panel p-4">
+      <h2 className="mb-3 font-display text-xs font-semibold uppercase tracking-wider text-cyan-300/70">{title}</h2>
       {items.length === 0 ? (
         <p className="py-4 text-center text-sm text-slate-500">Nenhuma recorrência cadastrada.</p>
       ) : (
-        <ul className="divide-y divide-slate-800">
+        <ul className="divide-y divide-cyan-500/10">
           {items.map((t) => {
             const cat = t.category_id ? categoryMap.get(t.category_id) : null
             const next = t.active ? nextOccurrenceAfter(t, today) : null
@@ -143,7 +153,7 @@ function TemplateSection({
                   </div>
                 </button>
                 <div className="flex items-center gap-2">
-                  <span className={`text-sm font-semibold ${t.type === 'income' ? 'text-emerald-400' : 'text-red-400'}`}>{formatCurrency(Number(t.amount))}</span>
+                  <span className={`glow-text text-sm font-semibold ${t.type === 'income' ? 'text-emerald-400' : 'text-rose-400'}`}>{formatCurrency(Number(t.amount))}</span>
                   <button
                     onClick={() => onToggle(t)}
                     className={`rounded p-1 text-xs ${t.active ? 'text-emerald-400' : 'text-slate-500'}`}
@@ -151,7 +161,7 @@ function TemplateSection({
                   >
                     {t.active ? '⏸️' : '▶️'}
                   </button>
-                  <button onClick={() => onDelete(t)} className="rounded p-1 text-slate-500 hover:text-red-400" aria-label="Excluir">
+                  <button onClick={() => onDelete(t)} className="rounded p-1 text-slate-500 hover:text-rose-400" aria-label="Excluir">
                     🗑️
                   </button>
                 </div>

@@ -7,8 +7,18 @@ import { useRecurringSync } from '../hooks/useRecurringSync'
 import { supabase } from '../lib/supabase'
 import { formatCurrency, formatMonthLabel } from '../lib/format'
 import { CHART_COLORS } from '../lib/constants'
+import { AnimatedNumber } from '../components/AnimatedNumber'
+import { TiltCard } from '../components/TiltCard'
 import type { Transaction } from '../types/database'
 import { Link } from 'react-router-dom'
+
+const HUD_TOOLTIP_STYLE = {
+  background: 'rgba(8,15,28,0.92)',
+  border: '1px solid rgba(34,224,255,0.35)',
+  borderRadius: 8,
+  color: '#dcecf7',
+  boxShadow: '0 0 20px -4px rgba(34,224,255,0.5)',
+}
 
 function monthsAgoRange(count: number) {
   const now = new Date()
@@ -99,70 +109,64 @@ export function Dashboard() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-semibold text-slate-100">Olá 👋</h1>
+        <h1 className="font-display text-lg font-bold uppercase tracking-wider text-cyan-100">Olá 👋</h1>
         <p className="text-sm text-slate-400">Resumo de {formatMonthLabel(`${currentMonthKey}-01`)}</p>
       </div>
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <StatCard label="Entradas" value={income} color="text-emerald-400" loading={loading} />
-        <StatCard label="Saídas" value={expense} color="text-red-400" loading={loading} />
-        <StatCard label="Saldo do mês" value={balance} color={balance >= 0 ? 'text-emerald-400' : 'text-red-400'} loading={loading} />
-        <StatCard label="Patrimônio investido" value={totalInvested} color="text-sky-400" loading={loadingInvestments} />
+        <StatCard label="Saídas" value={expense} color="text-rose-400" loading={loading} />
+        <StatCard label="Saldo do mês" value={balance} color={balance >= 0 ? 'text-emerald-400' : 'text-rose-400'} loading={loading} />
+        <StatCard label="Patrimônio investido" value={totalInvested} color="text-cyan-300" loading={loadingInvestments} />
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <div className="rounded-2xl border border-slate-800 bg-slate-900 p-4">
-          <h2 className="mb-3 text-sm font-medium text-slate-300">Gastos por categoria (mês atual)</h2>
+        <div className="hud-panel p-4">
+          <h2 className="mb-3 font-display text-xs font-semibold uppercase tracking-wider text-cyan-300/70">Gastos por categoria (mês atual)</h2>
           {expenseByCategory.length === 0 ? (
             <EmptyChart text="Nenhum gasto registrado neste mês ainda." />
           ) : (
             <ResponsiveContainer width="100%" height={260}>
               <PieChart>
-                <Pie data={expenseByCategory} dataKey="value" nameKey="name" innerRadius={55} outerRadius={90} paddingAngle={2}>
+                <Pie data={expenseByCategory} dataKey="value" nameKey="name" innerRadius={55} outerRadius={90} paddingAngle={3}>
                   {expenseByCategory.map((entry, i) => (
-                    <Cell key={entry.name} fill={entry.color || CHART_COLORS[i % CHART_COLORS.length]} />
+                    <Cell key={entry.name} fill={entry.color || CHART_COLORS[i % CHART_COLORS.length]} stroke="rgba(5,8,16,0.6)" strokeWidth={2} />
                   ))}
                 </Pie>
-                <Tooltip
-                  formatter={(value) => formatCurrency(Number(value))}
-                  contentStyle={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: 8, color: '#e2e8f0' }}
-                />
-                <Legend wrapperStyle={{ fontSize: 12 }} />
+                <Tooltip formatter={(value) => formatCurrency(Number(value))} contentStyle={HUD_TOOLTIP_STYLE} />
+                <Legend wrapperStyle={{ fontSize: 12, color: '#94a3b8' }} />
               </PieChart>
             </ResponsiveContainer>
           )}
         </div>
 
-        <div className="rounded-2xl border border-slate-800 bg-slate-900 p-4">
-          <h2 className="mb-3 text-sm font-medium text-slate-300">Entradas x Saídas (últimos 6 meses)</h2>
+        <div className="hud-panel p-4">
+          <h2 className="mb-3 font-display text-xs font-semibold uppercase tracking-wider text-cyan-300/70">Entradas x Saídas (últimos 6 meses)</h2>
           <ResponsiveContainer width="100%" height={260}>
             <BarChart data={evolution}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
-              <XAxis dataKey="label" stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} />
-              <YAxis stroke="#64748b" fontSize={12} tickLine={false} axisLine={false} width={40} tickFormatter={(v) => `${v / 1000}k`} />
-              <Tooltip
-                formatter={(value) => formatCurrency(Number(value))}
-                contentStyle={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: 8, color: '#e2e8f0' }}
-              />
-              <Legend wrapperStyle={{ fontSize: 12 }} />
-              <Bar dataKey="entradas" fill="#10b981" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="saidas" fill="#ef4444" radius={[4, 4, 0, 0]} />
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(34,224,255,0.08)" vertical={false} />
+              <XAxis dataKey="label" stroke="#3d5872" fontSize={12} tickLine={false} axisLine={false} />
+              <YAxis stroke="#3d5872" fontSize={12} tickLine={false} axisLine={false} width={40} tickFormatter={(v) => `${v / 1000}k`} />
+              <Tooltip formatter={(value) => formatCurrency(Number(value))} contentStyle={HUD_TOOLTIP_STYLE} cursor={{ fill: 'rgba(34,224,255,0.06)' }} />
+              <Legend wrapperStyle={{ fontSize: 12, color: '#94a3b8' }} />
+              <Bar dataKey="entradas" fill="#2dffb0" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="saidas" fill="#ff4d6a" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
       </div>
 
-      <div className="rounded-2xl border border-slate-800 bg-slate-900 p-4">
+      <div className="hud-panel p-4">
         <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-sm font-medium text-slate-300">Últimos lançamentos</h2>
-          <Link to="/lancamentos" className="text-xs text-emerald-400 hover:underline">
+          <h2 className="font-display text-xs font-semibold uppercase tracking-wider text-cyan-300/70">Últimos lançamentos</h2>
+          <Link to="/lancamentos" className="font-display text-[11px] uppercase tracking-wide text-cyan-400 hover:underline">
             Ver todos
           </Link>
         </div>
         {recent.length === 0 ? (
           <EmptyChart text="Nenhum lançamento este mês." />
         ) : (
-          <ul className="divide-y divide-slate-800">
+          <ul className="divide-y divide-cyan-500/10">
             {recent.map((t) => {
               const cat = t.category_id ? categoryMap.get(t.category_id) : null
               return (
@@ -176,7 +180,7 @@ export function Dashboard() {
                       </p>
                     </div>
                   </div>
-                  <span className={`text-sm font-semibold ${t.type === 'income' ? 'text-emerald-400' : 'text-red-400'}`}>
+                  <span className={`glow-text text-sm font-semibold ${t.type === 'income' ? 'text-emerald-400' : 'text-rose-400'}`}>
                     {t.type === 'income' ? '+' : '-'} {formatCurrency(Number(t.amount))}
                   </span>
                 </li>
@@ -191,10 +195,14 @@ export function Dashboard() {
 
 function StatCard({ label, value, color, loading }: { label: string; value: number; color: string; loading: boolean }) {
   return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-900 p-4">
-      <p className="text-xs text-slate-400">{label}</p>
-      <p className={`mt-1 text-lg font-semibold ${color}`}>{loading ? '···' : formatCurrency(value)}</p>
-    </div>
+    <TiltCard>
+      <div className="hud-panel h-full p-4">
+        <p className="font-display text-[10px] uppercase tracking-wider text-slate-500">{label}</p>
+        <p className={`glow-text mt-1 font-display text-lg font-bold ${color}`}>
+          {loading ? '···' : <AnimatedNumber value={value} format={formatCurrency} />}
+        </p>
+      </div>
+    </TiltCard>
   )
 }
 

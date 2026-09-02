@@ -1,5 +1,7 @@
 import { NavLink, Outlet } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { ArcReactor } from './ArcReactor'
+import { ParticleField } from './ParticleField'
 
 const NAV_ITEMS = [
   { to: '/', label: 'Início', icon: '🏠', end: true },
@@ -13,56 +15,65 @@ export function Layout() {
   const { user, signOut } = useAuth()
 
   return (
-    <div className="mx-auto flex min-h-dvh max-w-6xl flex-col sm:flex-row">
+    <div className="relative mx-auto flex min-h-dvh max-w-6xl flex-col sm:flex-row">
+      <ParticleField />
+
       {/* nav lateral no desktop */}
-      <aside className="hidden w-56 shrink-0 border-r border-slate-800 p-4 sm:flex sm:flex-col">
-        <div className="mb-6 flex items-center gap-2 px-2">
-          <span className="text-2xl">💰</span>
-          <span className="font-semibold text-slate-100">Finanças</span>
+      <aside className="relative z-10 hidden w-60 shrink-0 border-r border-cyan-500/15 p-4 sm:flex sm:flex-col">
+        <div className="mb-8 flex items-center gap-2.5 px-2">
+          <ArcReactor size={30} />
+          <span className="font-display text-sm font-bold uppercase tracking-[0.15em] text-cyan-100">Finanças</span>
         </div>
-        <nav className="flex flex-1 flex-col gap-1">
+        <nav className="flex flex-1 flex-col gap-1.5">
           {NAV_ITEMS.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
               end={item.end}
               className={({ isActive }) =>
-                `flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition ${
-                  isActive ? 'bg-emerald-600/15 text-emerald-400' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'
+                `relative flex items-center gap-2.5 rounded-lg border px-3 py-2.5 font-display text-[11px] font-medium uppercase tracking-wider transition-all ${
+                  isActive
+                    ? 'border-cyan-400/40 bg-cyan-400/10 text-cyan-200 shadow-[0_0_18px_-6px_rgba(34,224,255,0.7)]'
+                    : 'border-transparent text-slate-500 hover:border-cyan-500/20 hover:bg-cyan-500/5 hover:text-cyan-300'
                 }`
               }
             >
-              <span>{item.icon}</span>
-              {item.label}
+              {({ isActive }) => (
+                <>
+                  {isActive && <span className="absolute left-0 top-1/2 h-4 w-0.5 -translate-y-1/2 rounded bg-cyan-400 shadow-[0_0_8px_2px_rgba(34,224,255,0.8)]" />}
+                  <span className="text-base">{item.icon}</span>
+                  {item.label}
+                </>
+              )}
             </NavLink>
           ))}
         </nav>
-        <div className="border-t border-slate-800 pt-3 text-xs text-slate-500">
-          <p className="mb-2 truncate">{user?.email}</p>
-          <button onClick={() => void signOut()} className="text-slate-400 hover:text-red-400">
+        <div className="border-t border-cyan-500/15 pt-3 text-xs text-slate-500">
+          <p className="mb-2 truncate font-medium">{user?.email}</p>
+          <button onClick={() => void signOut()} className="font-display text-[11px] uppercase tracking-wider text-slate-500 hover:text-rose-400">
             Sair
           </button>
         </div>
       </aside>
 
       {/* topo no mobile */}
-      <header className="flex items-center justify-between border-b border-slate-800 px-4 py-3 sm:hidden">
+      <header className="relative z-10 flex items-center justify-between border-b border-cyan-500/15 px-4 py-3 sm:hidden">
         <div className="flex items-center gap-2">
-          <span className="text-xl">💰</span>
-          <span className="font-semibold text-slate-100">Finanças</span>
+          <ArcReactor size={24} />
+          <span className="font-display text-sm font-bold uppercase tracking-[0.15em] text-cyan-100">Finanças</span>
         </div>
-        <button onClick={() => void signOut()} className="text-sm text-slate-400 hover:text-red-400">
+        <button onClick={() => void signOut()} className="font-display text-[11px] uppercase tracking-wider text-slate-500 hover:text-rose-400">
           Sair
         </button>
       </header>
 
-      <main className="flex-1 overflow-x-hidden px-4 pb-24 pt-4 sm:px-6 sm:pb-8 sm:pt-6">
+      <main className="relative z-10 flex-1 overflow-x-hidden px-4 pb-24 pt-4 sm:px-6 sm:pb-8 sm:pt-6">
         <Outlet />
       </main>
 
       {/* nav inferior no mobile */}
       <nav
-        className="fixed inset-x-0 bottom-0 z-40 flex border-t border-slate-800 bg-slate-950/95 backdrop-blur sm:hidden"
+        className="fixed inset-x-0 bottom-0 z-40 flex border-t border-cyan-500/20 bg-[#050810]/95 backdrop-blur-xl sm:hidden"
         style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
       >
         {NAV_ITEMS.map((item) => (
@@ -71,13 +82,17 @@ export function Layout() {
             to={item.to}
             end={item.end}
             className={({ isActive }) =>
-              `flex flex-1 flex-col items-center gap-0.5 py-2 text-[11px] font-medium ${
-                isActive ? 'text-emerald-400' : 'text-slate-500'
+              `flex flex-1 flex-col items-center gap-0.5 py-2 font-display text-[9px] font-medium uppercase tracking-wide transition-colors ${
+                isActive ? 'text-cyan-300' : 'text-slate-600'
               }`
             }
           >
-            <span className="text-lg">{item.icon}</span>
-            {item.label}
+            {({ isActive }) => (
+              <>
+                <span className={`text-lg transition-transform ${isActive ? 'scale-110 drop-shadow-[0_0_6px_rgba(34,224,255,0.9)]' : ''}`}>{item.icon}</span>
+                {item.label}
+              </>
+            )}
           </NavLink>
         ))}
       </nav>

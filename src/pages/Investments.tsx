@@ -7,6 +7,8 @@ import { InvestmentForm, type InvestmentFormValues } from '../components/Investm
 import { MovementForm, type MovementFormValues } from '../components/MovementForm'
 import { formatCurrency, formatDate } from '../lib/format'
 import { INVESTMENT_CATEGORY_COLORS, INVESTMENT_CATEGORY_LABELS, INVESTMENT_MOVEMENT_LABELS } from '../lib/constants'
+import { AnimatedNumber } from '../components/AnimatedNumber'
+import { TiltCard } from '../components/TiltCard'
 import type { Investment } from '../types/database'
 
 export function Investments() {
@@ -99,38 +101,44 @@ export function Investments() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold text-slate-100">Investimentos</h1>
-        <button onClick={openCreate} className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-500">
+        <h1 className="font-display text-lg font-bold uppercase tracking-wider text-cyan-100">Investimentos</h1>
+        <button onClick={openCreate} className="rounded-lg bg-gradient-to-r from-cyan-500 to-cyan-400 px-4 py-2 font-display text-xs font-bold uppercase tracking-wider text-[#031018] shadow-[0_0_20px_-4px_rgba(34,224,255,0.8)] transition hover:from-cyan-400 hover:to-cyan-300">
           + Novo
         </button>
       </div>
 
       <div className="grid grid-cols-3 gap-3">
         <MiniStat label="Investido" value={totals.invested} color="text-slate-200" />
-        <MiniStat label="Patrimônio atual" value={totals.current} color="text-sky-400" />
+        <MiniStat label="Patrimônio atual" value={totals.current} color="text-cyan-300" />
         <MiniStat
           label="Ganho"
           value={totals.gain}
-          color={totals.gain >= 0 ? 'text-emerald-400' : 'text-red-400'}
+          color={totals.gain >= 0 ? 'text-emerald-400' : 'text-rose-400'}
           suffix={totals.invested > 0 ? ` (${totals.gainPct >= 0 ? '+' : ''}${totals.gainPct.toFixed(1)}%)` : ''}
         />
       </div>
 
       {allocation.length > 0 && (
-        <div className="rounded-2xl border border-slate-800 bg-slate-900 p-4">
-          <h2 className="mb-3 text-sm font-medium text-slate-300">Alocação da carteira</h2>
+        <div className="hud-panel p-4">
+          <h2 className="mb-3 font-display text-xs font-semibold uppercase tracking-wider text-cyan-300/70">Alocação da carteira</h2>
           <ResponsiveContainer width="100%" height={240}>
             <PieChart>
-              <Pie data={allocation} dataKey="value" nameKey="name" innerRadius={50} outerRadius={85} paddingAngle={2}>
+              <Pie data={allocation} dataKey="value" nameKey="name" innerRadius={50} outerRadius={85} paddingAngle={3}>
                 {allocation.map((entry) => (
-                  <Cell key={entry.name} fill={entry.color} />
+                  <Cell key={entry.name} fill={entry.color} stroke="rgba(5,8,16,0.6)" strokeWidth={2} />
                 ))}
               </Pie>
               <Tooltip
                 formatter={(value) => formatCurrency(Number(value))}
-                contentStyle={{ background: '#0f172a', border: '1px solid #1e293b', borderRadius: 8, color: '#e2e8f0' }}
+                contentStyle={{
+                  background: 'rgba(8,15,28,0.92)',
+                  border: '1px solid rgba(34,224,255,0.35)',
+                  borderRadius: 8,
+                  color: '#dcecf7',
+                  boxShadow: '0 0 20px -4px rgba(34,224,255,0.5)',
+                }}
               />
-              <Legend wrapperStyle={{ fontSize: 12 }} />
+              <Legend wrapperStyle={{ fontSize: 12, color: '#94a3b8' }} />
             </PieChart>
           </ResponsiveContainer>
         </div>
@@ -138,7 +146,7 @@ export function Investments() {
 
       <div className="space-y-3">
         {investments.length === 0 ? (
-          <div className="rounded-2xl border border-slate-800 bg-slate-900 p-8 text-center text-sm text-slate-500">
+          <div className="hud-panel p-8 text-center text-sm text-slate-500">
             Nenhum investimento cadastrado ainda. Adicione o primeiro para começar a acompanhar sua carteira.
           </div>
         ) : (
@@ -146,7 +154,7 @@ export function Investments() {
             const isOpen = expanded === inv.id
             const movements = movementsFor(inv.id)
             return (
-              <div key={inv.id} className="rounded-2xl border border-slate-800 bg-slate-900 p-4">
+              <div key={inv.id} className="hud-panel p-4">
                 <div className="flex items-start justify-between gap-2">
                   <button onClick={() => setExpanded(isOpen ? null : inv.id)} className="flex-1 text-left">
                     <div className="flex items-center gap-2">
@@ -159,8 +167,10 @@ export function Investments() {
                     </p>
                   </button>
                   <div className="text-right">
-                    <p className="text-sm font-semibold text-slate-100">{formatCurrency(inv.currentValue)}</p>
-                    <p className={`text-xs ${inv.gain >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                    <p className="glow-text font-display text-sm font-bold text-cyan-100">
+                      <AnimatedNumber value={inv.currentValue} format={formatCurrency} />
+                    </p>
+                    <p className={`glow-text text-xs ${inv.gain >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
                       {inv.gain >= 0 ? '+' : ''}
                       {formatCurrency(inv.gain)} ({inv.gainPct >= 0 ? '+' : ''}
                       {inv.gainPct.toFixed(1)}%)
@@ -169,22 +179,22 @@ export function Investments() {
                 </div>
 
                 <div className="mt-3 flex flex-wrap gap-2">
-                  <button onClick={() => setMovementTarget(inv)} className="rounded-lg border border-slate-700 px-3 py-1.5 text-xs font-medium text-slate-300 hover:bg-slate-800">
+                  <button onClick={() => setMovementTarget(inv)} className="rounded-lg border border-cyan-500/20 px-3 py-1.5 text-xs font-medium text-slate-300 hover:bg-cyan-500/10">
                     + Movimentação
                   </button>
-                  <button onClick={() => openEdit(inv)} className="rounded-lg border border-slate-700 px-3 py-1.5 text-xs font-medium text-slate-300 hover:bg-slate-800">
+                  <button onClick={() => openEdit(inv)} className="rounded-lg border border-cyan-500/20 px-3 py-1.5 text-xs font-medium text-slate-300 hover:bg-cyan-500/10">
                     Editar
                   </button>
-                  <button onClick={() => handleDelete(inv)} className="rounded-lg border border-slate-700 px-3 py-1.5 text-xs font-medium text-red-400 hover:bg-red-500/10">
+                  <button onClick={() => handleDelete(inv)} className="rounded-lg border border-cyan-500/20 px-3 py-1.5 text-xs font-medium text-rose-400 hover:bg-rose-500/10">
                     Excluir
                   </button>
-                  <button onClick={() => setExpanded(isOpen ? null : inv.id)} className="ml-auto text-xs text-slate-500 hover:text-emerald-400">
+                  <button onClick={() => setExpanded(isOpen ? null : inv.id)} className="ml-auto text-xs text-slate-500 hover:text-cyan-300">
                     {isOpen ? 'Ocultar histórico ▲' : `Histórico (${movements.length}) ▼`}
                   </button>
                 </div>
 
                 {isOpen && (
-                  <ul className="mt-3 space-y-1.5 border-t border-slate-800 pt-3">
+                  <ul className="mt-3 space-y-1.5 border-t border-cyan-500/15 pt-3">
                     {movements.length === 0 ? (
                       <p className="text-xs text-slate-500">Nenhuma movimentação registrada.</p>
                     ) : (
@@ -195,7 +205,7 @@ export function Investments() {
                           </span>
                           <span className="flex items-center gap-2">
                             <span className="font-medium text-slate-300">{formatCurrency(Number(m.amount))}</span>
-                            <button onClick={() => removeMovement(m.id)} className="text-slate-500 hover:text-red-400">
+                            <button onClick={() => removeMovement(m.id)} className="text-slate-500 hover:text-rose-400">
                               🗑️
                             </button>
                           </span>
@@ -227,12 +237,14 @@ export function Investments() {
 
 function MiniStat({ label, value, color, suffix }: { label: string; value: number; color: string; suffix?: string }) {
   return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-900 p-3 text-center">
-      <p className="text-xs text-slate-400">{label}</p>
-      <p className={`mt-0.5 text-sm font-semibold ${color}`}>
-        {formatCurrency(value)}
-        {suffix}
-      </p>
-    </div>
+    <TiltCard>
+      <div className="hud-panel h-full p-3 text-center">
+        <p className="font-display text-[10px] uppercase tracking-wider text-slate-500">{label}</p>
+        <p className={`glow-text mt-0.5 font-display text-sm font-bold ${color}`}>
+          <AnimatedNumber value={value} format={formatCurrency} />
+          {suffix}
+        </p>
+      </div>
+    </TiltCard>
   )
 }

@@ -100,7 +100,7 @@ function makePng(size, { bg, ring, coin }) {
   return Buffer.concat([signature, chunk('IHDR', ihdr), chunk('IDAT', idat), chunk('IEND', Buffer.alloc(0))])
 }
 
-const palette = { bg: '#0f172a', ring: '#10b981', coin: '#34d399' }
+const palette = { bg: '#050810', ring: '#22e0ff', coin: '#8ff3ff' }
 
 const outputs = [
   ['public/pwa-192.png', 192],

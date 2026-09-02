@@ -7,6 +7,8 @@ import { Select, TextInput } from '../components/FormField'
 import { TransactionForm, type TransactionFormValues } from '../components/TransactionForm'
 import { formatCurrency, currentMonthRange } from '../lib/format'
 import { PAYMENT_METHOD_LABELS } from '../lib/constants'
+import { AnimatedNumber } from '../components/AnimatedNumber'
+import { TiltCard } from '../components/TiltCard'
 import type { Transaction } from '../types/database'
 
 const defaultRange = currentMonthRange()
@@ -83,19 +85,19 @@ export function Transactions() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold text-slate-100">Lançamentos</h1>
-        <button onClick={openCreate} className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-500">
+        <h1 className="font-display text-lg font-bold uppercase tracking-wider text-cyan-100">Lançamentos</h1>
+        <button onClick={openCreate} className="rounded-lg bg-gradient-to-r from-cyan-500 to-cyan-400 px-4 py-2 font-display text-xs font-bold uppercase tracking-wider text-[#031018] shadow-[0_0_20px_-4px_rgba(34,224,255,0.8)] transition hover:from-cyan-400 hover:to-cyan-300">
           + Novo
         </button>
       </div>
 
       <div className="grid grid-cols-3 gap-3">
         <MiniStat label="Entradas" value={totals.income} color="text-emerald-400" />
-        <MiniStat label="Saídas" value={totals.expense} color="text-red-400" />
-        <MiniStat label="Saldo" value={totals.balance} color={totals.balance >= 0 ? 'text-emerald-400' : 'text-red-400'} />
+        <MiniStat label="Saídas" value={totals.expense} color="text-rose-400" />
+        <MiniStat label="Saldo" value={totals.balance} color={totals.balance >= 0 ? 'text-emerald-400' : 'text-rose-400'} />
       </div>
 
-      <div className="rounded-2xl border border-slate-800 bg-slate-900 p-4">
+      <div className="hud-panel p-4">
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
           <Select value={filters.type} onChange={(e) => setFilters((f) => ({ ...f, type: e.target.value as TransactionFilters['type'] }))}>
             <option value="all">Todos os tipos</option>
@@ -132,17 +134,17 @@ export function Transactions() {
               type="checkbox"
               checked={filters.variableOnly}
               onChange={(e) => setFilters((f) => ({ ...f, variableOnly: e.target.checked }))}
-              className="h-4 w-4 accent-emerald-500"
+              className="h-4 w-4 accent-cyan-400"
             />
             Só variáveis/não planejados
           </label>
-          <button onClick={clearFilters} className="text-xs text-slate-400 hover:text-emerald-400">
+          <button onClick={clearFilters} className="text-xs text-slate-400 hover:text-cyan-300">
             Limpar filtros
           </button>
         </div>
       </div>
 
-      <div className="rounded-2xl border border-slate-800 bg-slate-900 p-4">
+      <div className="hud-panel p-4">
         {loading ? (
           <p className="py-8 text-center text-sm text-slate-500">Carregando...</p>
         ) : grouped.length === 0 ? (
@@ -154,7 +156,7 @@ export function Transactions() {
                 <p className="mb-2 text-xs font-medium uppercase tracking-wide text-slate-500">
                   {date.split('-').reverse().join('/')}
                 </p>
-                <ul className="divide-y divide-slate-800">
+                <ul className="divide-y divide-cyan-500/10">
                   {items.map((t) => {
                     const cat = t.category_id ? categoryMap.get(t.category_id) : null
                     return (
@@ -172,10 +174,10 @@ export function Transactions() {
                           </div>
                         </button>
                         <div className="flex items-center gap-2">
-                          <span className={`text-sm font-semibold ${t.type === 'income' ? 'text-emerald-400' : 'text-red-400'}`}>
+                          <span className={`glow-text text-sm font-semibold ${t.type === 'income' ? 'text-emerald-400' : 'text-rose-400'}`}>
                             {t.type === 'income' ? '+' : '-'} {formatCurrency(Number(t.amount))}
                           </span>
-                          <button onClick={() => handleDelete(t)} className="rounded p-1 text-slate-500 hover:text-red-400" aria-label="Excluir">
+                          <button onClick={() => handleDelete(t)} className="rounded p-1 text-slate-500 hover:text-rose-400" aria-label="Excluir">
                             🗑️
                           </button>
                         </div>
@@ -200,9 +202,13 @@ export function Transactions() {
 
 function MiniStat({ label, value, color }: { label: string; value: number; color: string }) {
   return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-900 p-3 text-center">
-      <p className="text-xs text-slate-400">{label}</p>
-      <p className={`mt-0.5 text-sm font-semibold ${color}`}>{formatCurrency(value)}</p>
-    </div>
+    <TiltCard>
+      <div className="hud-panel h-full p-3 text-center">
+        <p className="font-display text-[10px] uppercase tracking-wider text-slate-500">{label}</p>
+        <p className={`glow-text mt-0.5 font-display text-sm font-bold ${color}`}>
+          <AnimatedNumber value={value} format={formatCurrency} />
+        </p>
+      </div>
+    </TiltCard>
   )
 }
