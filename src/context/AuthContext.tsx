@@ -37,15 +37,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [passwordRecovery, setPasswordRecovery] = useState(false)
 
   useEffect(() => {
-    console.log('[BOOT DEBUG] AuthProvider effect mounted, calling getSession()')
     supabase.auth.getSession().then(({ data }) => {
-      console.log('[BOOT DEBUG] getSession() resolved, userId=', data.session?.user?.id)
       setSession(data.session)
       setLoading(false)
     })
 
     const { data: listener } = supabase.auth.onAuthStateChange((event, newSession) => {
-      console.log('[BOOT DEBUG] onAuthStateChange fired — event=', event, 'userId=', newSession?.user?.id)
       setSession(newSession)
       if (event === 'PASSWORD_RECOVERY') {
         setPasswordRecovery(true)

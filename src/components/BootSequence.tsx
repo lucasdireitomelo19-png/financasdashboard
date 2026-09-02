@@ -9,26 +9,21 @@ const MIN_DURATION_MS = 1400
  * prefers-reduced-motion pulando direto para onDone.
  *
  * Usa setInterval/setTimeout (não requestAnimationFrame) porque rAF pode
- * ficar pausado indefinidamente numa aba em segundo plano/inativa,
- * travando a tela pra sempre — já aconteceu num PC real. */
+ * ficar pausado indefinidamente numa aba em segundo plano/inativa. */
 export function BootSequence({ onDone }: { onDone: () => void }) {
   const [progress, setProgress] = useState(0)
   const [lineIndex, setLineIndex] = useState(0)
   const doneRef = useRef(false)
 
   useEffect(() => {
-    console.log('[BOOT DEBUG] effect mounted')
-    const finish = (source: string) => {
-      console.log('[BOOT DEBUG] finish() called from', source, 'doneRef=', doneRef.current)
+    const finish = () => {
       if (doneRef.current) return
       doneRef.current = true
       onDone()
-      console.log('[BOOT DEBUG] onDone() returned')
     }
 
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      console.log('[BOOT DEBUG] prefers-reduced-motion matched')
-      finish('reduced-motion')
+      finish()
       return
     }
 
@@ -36,26 +31,20 @@ export function BootSequence({ onDone }: { onDone: () => void }) {
     const interval = window.setInterval(() => {
       const elapsed = Date.now() - start
       const pct = Math.min(100, (elapsed / MIN_DURATION_MS) * 100)
-      console.log('[BOOT DEBUG] tick, elapsed=', elapsed, 'pct=', pct)
       setProgress(pct)
       setLineIndex(Math.min(BOOT_LINES.length - 1, Math.floor((pct / 100) * BOOT_LINES.length)))
     }, 60)
 
     const timeout = window.setTimeout(() => {
-      console.log('[BOOT DEBUG] main timeout fired')
       setProgress(100)
-      finish('main-timeout')
+      finish()
     }, MIN_DURATION_MS)
 
     // segurança extra: se por algum motivo o timer principal falhar, garante
     // que a tela nunca trava o app pra sempre
-    const safety = window.setTimeout(() => {
-      console.log('[BOOT DEBUG] safety timeout fired')
-      finish('safety-timeout')
-    }, MIN_DURATION_MS + 2000)
+    const safety = window.setTimeout(finish, MIN_DURATION_MS + 2000)
 
     return () => {
-      console.log('[BOOT DEBUG] effect cleanup/unmount')
       window.clearInterval(interval)
       window.clearTimeout(timeout)
       window.clearTimeout(safety)
