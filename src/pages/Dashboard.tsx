@@ -3,12 +3,10 @@ import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, BarChart, Bar, XAxis
 import { useAuth } from '../context/AuthContext'
 import { useCategories } from '../hooks/useCategories'
 import { useInvestments } from '../hooks/useInvestments'
-import { usePaymentAccounts } from '../hooks/usePaymentAccounts'
 import { useRecurringSync } from '../hooks/useRecurringSync'
 import { supabase } from '../lib/supabase'
 import { formatCurrency, formatMonthLabel, monthsAgoRange, todayIso } from '../lib/format'
 import { CHART_COLORS } from '../lib/constants'
-import { computeVrBalance, computeVrSpent } from '../lib/accountCycles'
 import { computeInsights, type Insight } from '../lib/insights'
 import { AnimatedNumber } from '../components/AnimatedNumber'
 import { TiltCard } from '../components/TiltCard'
@@ -33,7 +31,6 @@ export function Dashboard() {
   const { user } = useAuth()
   const { categories } = useCategories(user?.id)
   const { investments, loading: loadingInvestments } = useInvestments(user?.id)
-  const { accounts } = usePaymentAccounts(user?.id)
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [futureInstallmentsTotal, setFutureInstallmentsTotal] = useState(0)
   const [loading, setLoading] = useState(true)
@@ -81,12 +78,7 @@ export function Dashboard() {
   const balance = income - expense
 
   const totalInvested = investments.reduce((s, i) => s + i.currentValue, 0)
-  // patrimônio líquido = só o que é acumulado de verdade (investimentos menos
-  // compromissos futuros). VR não entra aqui: é um benefício que se renova
-  // todo mês e tem seu próprio setor, separado do saldo real em conta.
   const netWorth = totalInvested - futureInstallmentsTotal
-
-  const vrAccounts = accounts.filter((a) => a.type === 'vale' && !a.archived)
 
   const categoryMap = useMemo(() => new Map(categories.map((c) => [c.id, c])), [categories])
 
@@ -190,47 +182,6 @@ export function Dashboard() {
         <StatCard label="Saldo do mês" value={balance} color={balance >= 0 ? 'text-emerald-400' : 'text-rose-400'} loading={loading} />
         <StatCard label="Patrimônio investido" value={totalInvested} color="text-cyan-300" loading={loadingInvestments} />
       </div>
-
-      {vrAccounts.length > 0 && (
-        <div className="hud-panel p-4">
-          <div className="mb-3 flex items-center justify-between">
-            <h2 className="font-display text-xs font-semibold uppercase tracking-wider text-cyan-300/70">Vale-refeição / Alimentação (VR/VA)</h2>
-            <Link to="/contas" className="font-display text-[11px] uppercase tracking-wide text-cyan-400 hover:underline">
-              Ver contas
-            </Link>
-          </div>
-          <div className="space-y-3">
-            {vrAccounts.map((a) => {
-              const spent = computeVrSpent(a, transactions, now)
-              const vrAccountBalance = computeVrBalance(a, transactions, now)
-              const monthlyCredit = Number(a.monthly_credit ?? 0)
-              const pct = monthlyCredit > 0 ? Math.min(100, Math.max(0, (spent / monthlyCredit) * 100)) : 0
-              return (
-                <div key={a.id}>
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="flex items-center gap-2 text-sm text-slate-300">
-                      <span className="text-base">{a.icon}</span>
-                      {a.name}
-                    </span>
-                    <span className={`glow-text font-display text-sm font-bold ${vrAccountBalance >= 0 ? 'text-cyan-200' : 'text-rose-400'}`}>
-                      {formatCurrency(vrAccountBalance)} <span className="text-xs font-normal text-slate-500">disponível</span>
-                    </span>
-                  </div>
-                  <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-[#0a1120]">
-                    <div
-                      className={`h-full rounded-full transition-all ${pct >= 100 ? 'bg-rose-500' : pct >= 80 ? 'bg-amber-400' : 'bg-cyan-400'}`}
-                      style={{ width: `${pct}%` }}
-                    />
-                  </div>
-                  <p className="mt-1 text-[11px] text-slate-500">
-                    gasto {formatCurrency(spent)} de {formatCurrency(monthlyCredit)} neste ciclo
-                  </p>
-                </div>
-              )
-            })}
-          </div>
-        </div>
-      )}
 
       {insights.length > 0 && (
         <div className="hud-panel p-4">
