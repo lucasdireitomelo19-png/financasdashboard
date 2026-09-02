@@ -480,6 +480,35 @@ drop policy if exists "google_conn_delete_own" on public.google_calendar_connect
 create policy "google_conn_delete_own" on public.google_calendar_connections
   for delete using (auth.uid() = user_id);
 
+-- ----------------------------------------------------------------------------
+-- whatsapp_links: vincula um número de WhatsApp (formato E.164, ex:
+-- +5511999998888) a um usuário. O webhook usa essa tabela (via service
+-- role) pra descobrir de quem é a mensagem que chegou.
+-- ----------------------------------------------------------------------------
+create table if not exists public.whatsapp_links (
+  user_id uuid primary key references auth.users(id) on delete cascade,
+  phone_number text not null unique,
+  created_at timestamptz not null default now()
+);
+
+alter table public.whatsapp_links enable row level security;
+
+drop policy if exists "whatsapp_links_select_own" on public.whatsapp_links;
+create policy "whatsapp_links_select_own" on public.whatsapp_links
+  for select using (auth.uid() = user_id);
+
+drop policy if exists "whatsapp_links_insert_own" on public.whatsapp_links;
+create policy "whatsapp_links_insert_own" on public.whatsapp_links
+  for insert with check (auth.uid() = user_id);
+
+drop policy if exists "whatsapp_links_update_own" on public.whatsapp_links;
+create policy "whatsapp_links_update_own" on public.whatsapp_links
+  for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+drop policy if exists "whatsapp_links_delete_own" on public.whatsapp_links;
+create policy "whatsapp_links_delete_own" on public.whatsapp_links
+  for delete using (auth.uid() = user_id);
+
 -- ============================================================================
 -- Fim do schema.
 -- ============================================================================

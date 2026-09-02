@@ -169,3 +169,9 @@ export interface GoogleCalendarConnection {
   connected_at: string
   last_synced_at: string | null
 }
+
+export interface WhatsappLink {
+  user_id: string
+  phone_number: string
+  created_at: string
+}

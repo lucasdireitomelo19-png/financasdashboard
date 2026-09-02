@@ -149,6 +149,70 @@ tabela `google_calendar_connections` e a coluna `google_event_id` em
   clique em "Conectar" de novo quando pedir. Pra não expirar, seria preciso
   publicar o app no Google (processo de verificação do Google, opcional).
 
+## 5. Registrar gastos pelo WhatsApp (opcional)
+
+Manda uma mensagem tipo "gastei 50 no mercado" ou "recebi 200 de freelance"
+pro seu próprio número de WhatsApp Business, e o lançamento é criado
+automaticamente. Usa a API oficial da Meta (WhatsApp Cloud API) — gratuita
+pra esse volume de uso.
+
+### 5.1 Criar o app no Meta for Developers
+
+1. Acesse [developers.facebook.com](https://developers.facebook.com/) e crie
+   uma conta de desenvolvedor (se ainda não tiver).
+2. **Meus apps → Criar app**. Tipo de app: **Outro** → **Empresa**. Dê um
+   nome.
+3. No painel do app, adicione o produto **WhatsApp**.
+4. Em **WhatsApp → Introdução**, você recebe um número de teste grátis da
+   Meta e um **ID do número de telefone**. Guarde esse ID.
+5. Em **Adicionar destinatário**, adicione seu próprio número de celular —
+   é pra ele que você vai mandar as mensagens (a Meta te manda um código
+   por WhatsApp pra confirmar).
+6. Ainda em **WhatsApp → Introdução**, gere um **token de acesso temporário**
+   (válido por 24h, bom pra testar) ou, em **Configuração do app → Básico**,
+   gere um **token permanente** (precisa criar um **System User** em
+   Business Settings — mais um passo, mas o token não expira).
+
+### 5.2 Configurar o webhook
+
+1. Em **WhatsApp → Configuração**, encontre **Webhook** e clique em
+   **Editar**.
+2. **URL de callback**: `https://SEU-APP.vercel.app/api/whatsapp/webhook`
+3. **Token de verificação**: invente uma senha qualquer (ex: uma sequência
+   aleatória) — só precisa ser a mesma que você vai colocar na variável
+   `WHATSAPP_VERIFY_TOKEN` na Vercel.
+4. Clique em **Verificar e salvar** (só funciona depois que a variável de
+   ambiente abaixo já estiver salva e o deploy atualizado).
+5. Em **Campos do webhook**, clique em **Assinar** no campo **messages**.
+
+### 5.3 Variáveis de ambiente na Vercel
+
+| Nome | Valor |
+| --- | --- |
+| `WHATSAPP_PHONE_NUMBER_ID` | o ID do passo 5.1 |
+| `WHATSAPP_ACCESS_TOKEN` | o token do passo 5.1 |
+| `WHATSAPP_VERIFY_TOKEN` | a senha que você inventou no passo 5.2 |
+
+Nenhuma dessas leva prefixo `VITE_` — são todas usadas só no servidor.
+
+### 5.4 Rodar o SQL novo e vincular seu número
+
+Rode de novo o `supabase/schema.sql` (adiciona a tabela
+`whatsapp_links`). Depois, no app, vá em **Configurações → WhatsApp** e
+cadastre seu número com DDI+DDD (ex: `5511999998888`, só números).
+
+### Limitações atuais
+
+- Com o número de teste grátis da Meta, só quem foi adicionado como
+  "destinatário de teste" consegue mandar mensagem (ou seja, só você mesmo
+  — perfeito pro uso pessoal). Pra liberar geral precisaria comprar/verificar
+  um número de produção.
+- Não reconhece categoria automaticamente a não ser que o nome dela apareça
+  na mensagem (ex: "gastei 50 mercado" bate com a categoria "Mercado" se
+  você tiver uma com esse nome).
+- Não interpreta parcelamento, forma de pagamento nem conta (cartão/VR) —
+  só valor, tipo e descrição. Ajuste os detalhes depois no app se precisar.
+
 ## Funcionalidades
 
 - **Lançamentos**: registre gastos e entradas, com categoria, forma de
