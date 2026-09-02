@@ -65,8 +65,14 @@ export function Dashboard() {
   const currentMonthTx = useMemo(() => transactions.filter((t) => t.date.startsWith(currentMonthKey)), [transactions, currentMonthKey])
   const previousMonthTx = useMemo(() => transactions.filter((t) => t.date.startsWith(prevMonthKey)), [transactions, prevMonthKey])
 
-  const income = currentMonthTx.filter((t) => t.type === 'income').reduce((s, t) => s + Number(t.amount), 0)
-  const expense = currentMonthTx.filter((t) => t.type === 'expense').reduce((s, t) => s + Number(t.amount), 0)
+  // compras no VR/VA saem do benefício, não da conta bancária real — não
+  // devem contar no fluxo de caixa "de verdade" (saldo do mês, entradas x
+  // saídas, projeção). Elas já aparecem no card da conta em "Suas contas".
+  const vrAccountIds = useMemo(() => new Set(accounts.filter((a) => a.type === 'vale').map((a) => a.id)), [accounts])
+  const isCashTx = (t: Transaction) => !t.account_id || !vrAccountIds.has(t.account_id)
+
+  const income = currentMonthTx.filter((t) => t.type === 'income' && isCashTx(t)).reduce((s, t) => s + Number(t.amount), 0)
+  const expense = currentMonthTx.filter((t) => t.type === 'expense' && isCashTx(t)).reduce((s, t) => s + Number(t.amount), 0)
   const balance = income - expense
 
   const totalInvested = investments.reduce((s, i) => s + i.currentValue, 0)
@@ -116,6 +122,7 @@ export function Dashboard() {
       months.push({ key, label: formatMonthLabel(`${key}-01`), entradas: 0, saidas: 0 })
     }
     for (const t of transactions) {
+      if (!isCashTx(t)) continue
       const key = t.date.slice(0, 7)
       const m = months.find((x) => x.key === key)
       if (!m) continue
@@ -124,7 +131,7 @@ export function Dashboard() {
     }
     return months
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [transactions])
+  }, [transactions, vrAccountIds])
 
   // taxa de poupança média dos últimos 3 meses completos (exclui o mês atual, que ainda não fechou)
   const avgMonthlySavings = useMemo(() => {
