@@ -37,7 +37,7 @@ export function ProfileQuiz({
     <div>
       <div className="mb-4 flex gap-1.5">
         {QUIZ_QUESTIONS.map((q, i) => (
-          <div key={q.id} className={`h-1 flex-1 rounded-full ${i <= step ? 'bg-cyan-400 shadow-[0_0_8px_rgba(34,224,255,0.8)]' : 'bg-cyan-500/15'}`} />
+          <div key={q.id} className={`h-1 flex-1 rounded-full ${i <= step ? 'bg-cyan-400 shadow-[0_0_8px_color-mix(in_srgb,var(--color-accent)_80%,transparent)]' : 'bg-cyan-500/15'}`} />
         ))}
       </div>
 
@@ -55,7 +55,7 @@ export function ProfileQuiz({
             onClick={() => choose(opt.value)}
             className={`w-full rounded-lg border px-4 py-3 text-left text-sm transition ${
               selected === opt.value
-                ? 'border-cyan-400/60 bg-cyan-400/10 text-cyan-100 shadow-[0_0_16px_-4px_rgba(34,224,255,0.6)]'
+                ? 'border-cyan-400/60 bg-cyan-400/10 text-cyan-100 shadow-[0_0_16px_-4px_color-mix(in_srgb,var(--color-accent)_60%,transparent)]'
                 : 'border-cyan-500/20 bg-[#0a1120]/60 text-slate-300 hover:border-cyan-400/40 hover:bg-cyan-500/5'
             } disabled:cursor-not-allowed disabled:opacity-60`}
           >

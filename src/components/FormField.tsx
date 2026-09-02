@@ -10,7 +10,7 @@ export function FormField({ label, children }: { label: string; children: ReactN
 }
 
 const baseInput =
-  'w-full rounded-lg border border-cyan-500/20 bg-[#0a1120]/80 px-3 py-2.5 text-slate-100 outline-none placeholder:text-slate-600 transition-all focus:border-cyan-400/70 focus:shadow-[0_0_0_1px_rgba(34,224,255,0.4),0_0_16px_-2px_rgba(34,224,255,0.5)]'
+  'w-full rounded-lg border border-cyan-500/20 bg-[#0a1120]/80 px-3 py-2.5 text-slate-100 outline-none placeholder:text-slate-600 transition-all focus:border-cyan-400/70 focus:shadow-[0_0_0_1px_color-mix(in_srgb,var(--color-accent)_40%,transparent),0_0_16px_-2px_color-mix(in_srgb,var(--color-accent)_50%,transparent)]'
 
 export function TextInput(props: React.InputHTMLAttributes<HTMLInputElement>) {
   return <input {...props} className={`${baseInput} ${props.className ?? ''}`} />
@@ -28,7 +28,7 @@ export function PrimaryButton(props: React.ButtonHTMLAttributes<HTMLButtonElemen
   return (
     <button
       {...props}
-      className={`w-full rounded-lg bg-gradient-to-r from-cyan-500 to-cyan-400 px-4 py-2.5 font-display text-sm font-bold uppercase tracking-wider text-[#031018] shadow-[0_0_20px_-4px_rgba(34,224,255,0.8)] transition hover:from-cyan-400 hover:to-cyan-300 hover:shadow-[0_0_28px_-4px_rgba(34,224,255,0.95)] disabled:cursor-not-allowed disabled:opacity-50 ${props.className ?? ''}`}
+      className={`w-full rounded-lg bg-gradient-to-r from-cyan-500 to-cyan-400 px-4 py-2.5 font-display text-sm font-bold uppercase tracking-wider text-[#031018] shadow-[0_0_20px_-4px_color-mix(in_srgb,var(--color-accent)_80%,transparent)] transition hover:from-cyan-400 hover:to-cyan-300 hover:shadow-[0_0_28px_-4px_color-mix(in_srgb,var(--color-accent)_95%,transparent)] disabled:cursor-not-allowed disabled:opacity-50 ${props.className ?? ''}`}
     />
   )
 }

@@ -59,7 +59,7 @@ export function SavingsGoals({ userId }: { userId: string | undefined }) {
         <p className="text-sm text-slate-400">Guarde dinheiro com um objetivo — viagem, reserva, o que for.</p>
         <button
           onClick={openCreate}
-          className="shrink-0 rounded-lg bg-gradient-to-r from-cyan-500 to-cyan-400 px-4 py-2 font-display text-xs font-bold uppercase tracking-wider text-[#031018] shadow-[0_0_20px_-4px_rgba(34,224,255,0.8)] transition hover:from-cyan-400 hover:to-cyan-300"
+          className="shrink-0 rounded-lg bg-gradient-to-r from-cyan-500 to-cyan-400 px-4 py-2 font-display text-xs font-bold uppercase tracking-wider text-[#031018] shadow-[0_0_20px_-4px_color-mix(in_srgb,var(--color-accent)_80%,transparent)] transition hover:from-cyan-400 hover:to-cyan-300"
         >
           + Meta
         </button>

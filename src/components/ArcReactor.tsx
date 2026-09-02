@@ -13,7 +13,7 @@ export function ArcReactor({ size = 28 }: { size?: number }) {
         className="absolute inset-[7px] rounded-full"
         style={{
           background: 'radial-gradient(circle, #fff 0%, var(--color-accent) 45%, transparent 75%)',
-          boxShadow: '0 0 10px 2px rgba(34,224,255,0.85)',
+          boxShadow: '0 0 10px 2px color-mix(in srgb, var(--color-accent) 85%, transparent)',
         }}
       />
     </span>

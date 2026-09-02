@@ -17,10 +17,10 @@ import { Link } from 'react-router-dom'
 
 const HUD_TOOLTIP_STYLE = {
   background: 'rgba(8,15,28,0.92)',
-  border: '1px solid rgba(34,224,255,0.35)',
+  border: '1px solid color-mix(in srgb, var(--color-accent) 35%, transparent)',
   borderRadius: 8,
   color: '#dcecf7',
-  boxShadow: '0 0 20px -4px rgba(34,224,255,0.5)',
+  boxShadow: '0 0 20px -4px color-mix(in srgb, var(--color-accent) 50%, transparent)',
 }
 
 const INSIGHT_STYLES: Record<Insight['tone'], { border: string; bg: string; text: string; icon: string }> = {
@@ -31,6 +31,7 @@ const INSIGHT_STYLES: Record<Insight['tone'], { border: string; bg: string; text
 
 export function Dashboard() {
   const { user } = useAuth()
+  const displayName = (user?.user_metadata?.display_name as string | undefined)?.trim()
   const { categories } = useCategories(user?.id)
   const { investments, loading: loadingInvestments } = useInvestments(user?.id)
   const { accounts } = usePaymentAccounts(user?.id)
@@ -148,7 +149,9 @@ export function Dashboard() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-display text-lg font-bold uppercase tracking-wider text-cyan-100">Olá 👋</h1>
+        <h1 className="font-display text-lg font-bold uppercase tracking-wider text-cyan-100">
+          Olá{displayName ? `, ${displayName}` : ''} 👋
+        </h1>
         <p className="text-sm text-slate-400">Resumo de {formatMonthLabel(`${currentMonthKey}-01`)}</p>
       </div>
 
@@ -260,10 +263,10 @@ export function Dashboard() {
           <h2 className="mb-3 font-display text-xs font-semibold uppercase tracking-wider text-cyan-300/70">Entradas x Saídas (últimos 6 meses)</h2>
           <ResponsiveContainer width="100%" height={260}>
             <BarChart data={evolution}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(34,224,255,0.08)" vertical={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke="color-mix(in srgb, var(--color-accent) 8%, transparent)" vertical={false} />
               <XAxis dataKey="label" stroke="#3d5872" fontSize={12} tickLine={false} axisLine={false} />
               <YAxis stroke="#3d5872" fontSize={12} tickLine={false} axisLine={false} width={40} tickFormatter={(v) => `${v / 1000}k`} />
-              <Tooltip formatter={(value) => formatCurrency(Number(value))} contentStyle={HUD_TOOLTIP_STYLE} cursor={{ fill: 'rgba(34,224,255,0.06)' }} />
+              <Tooltip formatter={(value) => formatCurrency(Number(value))} contentStyle={HUD_TOOLTIP_STYLE} cursor={{ fill: 'color-mix(in srgb, var(--color-accent) 6%, transparent)' }} />
               <Legend wrapperStyle={{ fontSize: 12, color: '#94a3b8' }} />
               <Bar dataKey="entradas" fill="#2dffb0" radius={[4, 4, 0, 0]} />
               <Bar dataKey="saidas" fill="#ff4d6a" radius={[4, 4, 0, 0]} />

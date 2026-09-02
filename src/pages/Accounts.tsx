@@ -74,7 +74,7 @@ export function Accounts() {
         <h1 className="font-display text-lg font-bold uppercase tracking-wider text-cyan-100">Contas</h1>
         <button
           onClick={openCreate}
-          className="rounded-lg bg-gradient-to-r from-cyan-500 to-cyan-400 px-4 py-2 font-display text-xs font-bold uppercase tracking-wider text-[#031018] shadow-[0_0_20px_-4px_rgba(34,224,255,0.8)] transition hover:from-cyan-400 hover:to-cyan-300"
+          className="rounded-lg bg-gradient-to-r from-cyan-500 to-cyan-400 px-4 py-2 font-display text-xs font-bold uppercase tracking-wider text-[#031018] shadow-[0_0_20px_-4px_color-mix(in_srgb,var(--color-accent)_80%,transparent)] transition hover:from-cyan-400 hover:to-cyan-300"
         >
           + Nova
         </button>
@@ -307,7 +307,7 @@ function VrAccountCard({
         </div>
         <div className="mt-2 h-2 overflow-hidden rounded-full bg-[#0a1120]">
           <div
-            className="h-full rounded-full bg-gradient-to-r from-cyan-400 to-emerald-400 shadow-[0_0_10px_rgba(34,224,255,0.6)] transition-all"
+            className="h-full rounded-full bg-gradient-to-r from-cyan-400 to-emerald-400 shadow-[0_0_10px_color-mix(in_srgb,var(--color-accent)_60%,transparent)] transition-all"
             style={{ width: `${pct}%` }}
           />
         </div>

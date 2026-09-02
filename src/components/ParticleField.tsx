@@ -67,7 +67,7 @@ export function ParticleField() {
           const dy = a.y - b.y
           const dist = Math.sqrt(dx * dx + dy * dy)
           if (dist < LINK_DISTANCE) {
-            ctx.strokeStyle = `rgba(34, 224, 255, ${0.12 * (1 - dist / LINK_DISTANCE)})`
+            ctx.strokeStyle = `color-mix(in srgb, var(--color-accent) ${12 * (1 - dist / LINK_DISTANCE)}%, transparent)`
             ctx.lineWidth = 1
             ctx.beginPath()
             ctx.moveTo(a.x, a.y)
@@ -78,7 +78,7 @@ export function ParticleField() {
       }
 
       for (const p of particles) {
-        ctx.fillStyle = 'rgba(34, 224, 255, 0.55)'
+        ctx.fillStyle = 'color-mix(in srgb, var(--color-accent) 55%, transparent)'
         ctx.beginPath()
         ctx.arc(p.x, p.y, 1.4, 0, Math.PI * 2)
         ctx.fill()

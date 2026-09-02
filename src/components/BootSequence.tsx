@@ -43,7 +43,7 @@ export function BootSequence({ onDone }: { onDone: () => void }) {
         <div className="mt-3 h-1 overflow-hidden rounded-full bg-[#0a1120]">
           <div
             className="h-full rounded-full bg-gradient-to-r from-cyan-500 to-cyan-300 transition-[width] duration-150 ease-linear"
-            style={{ width: `${progress}%`, boxShadow: '0 0 10px rgba(34,224,255,0.8)' }}
+            style={{ width: `${progress}%`, boxShadow: '0 0 10px color-mix(in srgb, var(--color-accent) 80%, transparent)' }}
           />
         </div>
         <p className="mt-2 font-display text-[10px] tracking-[0.2em] text-slate-500">{Math.round(progress)}%</p>

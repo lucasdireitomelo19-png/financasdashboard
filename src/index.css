@@ -19,6 +19,34 @@ html {
   color-scheme: dark;
 }
 
+/* ---------------------------------------------------------------------- */
+/* Esquemas de cores alternativos — trocam a cor "ciano" principal (o brand
+   accent) por outro tom, mantendo a mesma pegada HUD/arc-reactor. Aplicado
+   via [data-theme] no <html>, escolhido em Configurações e salvo no
+   navegador. Sobrescreve também a paleta cyan-* do Tailwind (usada
+   diretamente em boa parte do app) para que tudo reflita o tema. */
+[data-theme='pink'] {
+  --color-accent: #ff2e9a;
+  --color-accent-dim: #b31c6b;
+  --color-cyan-100: #ffe3f3;
+  --color-cyan-200: #ffc2e6;
+  --color-cyan-300: #ff8fd0;
+  --color-cyan-400: #ff56b3;
+  --color-cyan-500: #ff2e9a;
+  --color-cyan-600: #d81880;
+}
+
+[data-theme='red'] {
+  --color-accent: #ff3049;
+  --color-accent-dim: #b31c2c;
+  --color-cyan-100: #ffe1e4;
+  --color-cyan-200: #ffb8c0;
+  --color-cyan-300: #ff8894;
+  --color-cyan-400: #ff5566;
+  --color-cyan-500: #ff3049;
+  --color-cyan-600: #d81a30;
+}
+
 body {
   background: var(--color-hud-bg);
   color: #dcecf7;
@@ -38,9 +66,9 @@ body::before {
   z-index: 0;
   pointer-events: none;
   background-image:
-    linear-gradient(rgba(34, 224, 255, 0.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(34, 224, 255, 0.06) 1px, transparent 1px),
-    radial-gradient(ellipse 90% 60% at 50% 0%, rgba(34, 224, 255, 0.12), transparent 65%),
+    linear-gradient(color-mix(in srgb, var(--color-accent) 6%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--color-accent) 6%, transparent) 1px, transparent 1px),
+    radial-gradient(ellipse 90% 60% at 50% 0%, color-mix(in srgb, var(--color-accent) 12%, transparent), transparent 65%),
     radial-gradient(ellipse 80% 60% at 15% 100%, rgba(255, 176, 32, 0.06), transparent 60%);
   background-size: 42px 42px, 42px 42px, 100% 100%, 100% 100%;
   animation: grid-drift 40s linear infinite;
@@ -105,7 +133,7 @@ input[type='number'] {
 }
 
 ::selection {
-  background: rgba(34, 224, 255, 0.3);
+  background: color-mix(in srgb, var(--color-accent) 30%, transparent);
   color: #fff;
 }
 
@@ -115,12 +143,12 @@ input[type='number'] {
 .hud-panel {
   position: relative;
   border-radius: 14px;
-  border: 1px solid rgba(34, 224, 255, 0.22);
+  border: 1px solid color-mix(in srgb, var(--color-accent) 22%, transparent);
   background: linear-gradient(155deg, rgba(15, 27, 46, 0.75), rgba(6, 11, 22, 0.6));
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   box-shadow:
-    inset 0 1px 0 0 rgba(34, 224, 255, 0.08),
+    inset 0 1px 0 0 color-mix(in srgb, var(--color-accent) 8%, transparent),
     0 10px 30px -14px rgba(0, 0, 0, 0.7);
   transition:
     border-color 0.25s ease,
@@ -134,7 +162,7 @@ input[type='number'] {
   inset: 0;
   border-radius: inherit;
   padding: 1px;
-  background: linear-gradient(120deg, rgba(34, 224, 255, 0.5), transparent 30%, transparent 70%, rgba(255, 176, 32, 0.35));
+  background: linear-gradient(120deg, color-mix(in srgb, var(--color-accent) 50%, transparent), transparent 30%, transparent 70%, rgba(255, 176, 32, 0.35));
   -webkit-mask:
     linear-gradient(#000 0 0) content-box,
     linear-gradient(#000 0 0);
@@ -186,12 +214,12 @@ input[type='number'] {
 }
 
 .hud-panel:hover {
-  border-color: rgba(34, 224, 255, 0.45);
+  border-color: color-mix(in srgb, var(--color-accent) 45%, transparent);
   box-shadow:
-    inset 0 1px 0 0 rgba(34, 224, 255, 0.14),
-    0 0 0 1px rgba(34, 224, 255, 0.12),
+    inset 0 1px 0 0 color-mix(in srgb, var(--color-accent) 14%, transparent),
+    0 0 0 1px color-mix(in srgb, var(--color-accent) 12%, transparent),
     0 16px 40px -14px rgba(0, 0, 0, 0.8),
-    0 0 32px -8px rgba(34, 224, 255, 0.35);
+    0 0 32px -8px color-mix(in srgb, var(--color-accent) 35%, transparent);
 }
 
 /* brilho aplicado ao texto usando a cor atual (ex: text-emerald-400 + glow-text) */
@@ -203,16 +231,16 @@ input[type='number'] {
 
 .glow-border {
   box-shadow:
-    0 0 0 1px rgba(34, 224, 255, 0.5),
-    0 0 18px -2px rgba(34, 224, 255, 0.6);
+    0 0 0 1px color-mix(in srgb, var(--color-accent) 50%, transparent),
+    0 0 18px -2px color-mix(in srgb, var(--color-accent) 60%, transparent);
 }
 
 @keyframes pulse-ring {
   0% {
-    box-shadow: 0 0 0 0 rgba(34, 224, 255, 0.45);
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-accent) 45%, transparent);
   }
   100% {
-    box-shadow: 0 0 0 12px rgba(34, 224, 255, 0);
+    box-shadow: 0 0 0 12px color-mix(in srgb, var(--color-accent) 0%, transparent);
   }
 }
 

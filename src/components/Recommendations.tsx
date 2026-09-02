@@ -101,7 +101,7 @@ export function Recommendations({ userId, investments }: { userId: string | unde
           </div>
           <button
             onClick={() => setQuizOpen(true)}
-            className="shrink-0 rounded-lg bg-gradient-to-r from-cyan-500 to-cyan-400 px-4 py-2 font-display text-xs font-bold uppercase tracking-wider text-[#031018] shadow-[0_0_20px_-4px_rgba(34,224,255,0.8)] transition hover:from-cyan-400 hover:to-cyan-300"
+            className="shrink-0 rounded-lg bg-gradient-to-r from-cyan-500 to-cyan-400 px-4 py-2 font-display text-xs font-bold uppercase tracking-wider text-[#031018] shadow-[0_0_20px_-4px_color-mix(in_srgb,var(--color-accent)_80%,transparent)] transition hover:from-cyan-400 hover:to-cyan-300"
           >
             {profile ? 'Refazer quiz' : 'Fazer quiz'}
           </button>
@@ -113,7 +113,7 @@ export function Recommendations({ userId, investments }: { userId: string | unde
           <h2 className="mb-3 font-display text-xs font-semibold uppercase tracking-wider text-cyan-300/70">Alocação atual x sugerida</h2>
           <ResponsiveContainer width="100%" height={320}>
             <RadarChart data={radarData} outerRadius="72%">
-              <PolarGrid stroke="rgba(34,224,255,0.15)" />
+              <PolarGrid stroke="color-mix(in srgb, var(--color-accent) 15%, transparent)" />
               <PolarAngleAxis dataKey="category" stroke="#5c7a94" fontSize={11} />
               <PolarRadiusAxis angle={30} stroke="#3d5872" fontSize={10} tickFormatter={(v) => `${v}%`} />
               <Radar name="Atual" dataKey="atual" stroke="#22e0ff" fill="#22e0ff" fillOpacity={0.28} />
@@ -123,7 +123,7 @@ export function Recommendations({ userId, investments }: { userId: string | unde
                 formatter={(value) => `${value}%`}
                 contentStyle={{
                   background: 'rgba(8,15,28,0.92)',
-                  border: '1px solid rgba(34,224,255,0.35)',
+                  border: '1px solid color-mix(in srgb, var(--color-accent) 35%, transparent)',
                   borderRadius: 8,
                   color: '#dcecf7',
                 }}

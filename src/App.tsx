@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext'
+import { ThemeProvider } from './context/ThemeContext'
 import { Layout } from './components/Layout'
 import { LoadingReactor } from './components/LoadingReactor'
 import { BootSequence } from './components/BootSequence'
@@ -12,6 +13,8 @@ import { Recurring } from './pages/Recurring'
 import { Investments } from './pages/Investments'
 import { Categories } from './pages/Categories'
 import { Accounts } from './pages/Accounts'
+import { Settings } from './pages/Settings'
+import { Profile } from './pages/Profile'
 
 function AppRoutes() {
   const { session, loading, passwordRecovery } = useAuth()
@@ -61,6 +64,8 @@ function AppRoutes() {
         <Route path="/contas" element={<Accounts />} />
         <Route path="/investimentos" element={<Investments />} />
         <Route path="/categorias" element={<Categories />} />
+        <Route path="/configuracoes" element={<Settings />} />
+        <Route path="/perfil" element={<Profile />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>
@@ -70,9 +75,11 @@ function AppRoutes() {
 function App() {
   return (
     <BrowserRouter>
-      <AuthProvider>
-        <AppRoutes />
-      </AuthProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          <AppRoutes />
+        </AuthProvider>
+      </ThemeProvider>
     </BrowserRouter>
   )
 }

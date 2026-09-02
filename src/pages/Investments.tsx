@@ -114,7 +114,7 @@ export function Investments() {
       <div className="flex items-center justify-between">
         <h1 className="font-display text-lg font-bold uppercase tracking-wider text-cyan-100">Investimentos</h1>
         {tab === 'carteira' && (
-          <button onClick={openCreate} className="rounded-lg bg-gradient-to-r from-cyan-500 to-cyan-400 px-4 py-2 font-display text-xs font-bold uppercase tracking-wider text-[#031018] shadow-[0_0_20px_-4px_rgba(34,224,255,0.8)] transition hover:from-cyan-400 hover:to-cyan-300">
+          <button onClick={openCreate} className="rounded-lg bg-gradient-to-r from-cyan-500 to-cyan-400 px-4 py-2 font-display text-xs font-bold uppercase tracking-wider text-[#031018] shadow-[0_0_20px_-4px_color-mix(in_srgb,var(--color-accent)_80%,transparent)] transition hover:from-cyan-400 hover:to-cyan-300">
             + Novo
           </button>
         )}
@@ -124,7 +124,7 @@ export function Investments() {
         <button
           onClick={() => setTab('carteira')}
           className={`rounded-lg border px-2 py-2.5 font-display text-[11px] font-semibold uppercase tracking-wider transition ${
-            tab === 'carteira' ? 'border-cyan-400/50 bg-cyan-400/10 text-cyan-200 shadow-[0_0_16px_-6px_rgba(34,224,255,0.7)]' : 'border-cyan-500/20 text-slate-400'
+            tab === 'carteira' ? 'border-cyan-400/50 bg-cyan-400/10 text-cyan-200 shadow-[0_0_16px_-6px_color-mix(in_srgb,var(--color-accent)_70%,transparent)]' : 'border-cyan-500/20 text-slate-400'
           }`}
         >
           📊 Carteira
@@ -132,7 +132,7 @@ export function Investments() {
         <button
           onClick={() => setTab('metas')}
           className={`rounded-lg border px-2 py-2.5 font-display text-[11px] font-semibold uppercase tracking-wider transition ${
-            tab === 'metas' ? 'border-cyan-400/50 bg-cyan-400/10 text-cyan-200 shadow-[0_0_16px_-6px_rgba(34,224,255,0.7)]' : 'border-cyan-500/20 text-slate-400'
+            tab === 'metas' ? 'border-cyan-400/50 bg-cyan-400/10 text-cyan-200 shadow-[0_0_16px_-6px_color-mix(in_srgb,var(--color-accent)_70%,transparent)]' : 'border-cyan-500/20 text-slate-400'
           }`}
         >
           🎯 Metas
@@ -140,7 +140,7 @@ export function Investments() {
         <button
           onClick={() => setTab('recomendacoes')}
           className={`rounded-lg border px-2 py-2.5 font-display text-[11px] font-semibold uppercase tracking-wider transition ${
-            tab === 'recomendacoes' ? 'border-cyan-400/50 bg-cyan-400/10 text-cyan-200 shadow-[0_0_16px_-6px_rgba(34,224,255,0.7)]' : 'border-cyan-500/20 text-slate-400'
+            tab === 'recomendacoes' ? 'border-cyan-400/50 bg-cyan-400/10 text-cyan-200 shadow-[0_0_16px_-6px_color-mix(in_srgb,var(--color-accent)_70%,transparent)]' : 'border-cyan-500/20 text-slate-400'
           }`}
         >
           🧭 Dicas
@@ -177,10 +177,10 @@ export function Investments() {
                 formatter={(value) => formatCurrency(Number(value))}
                 contentStyle={{
                   background: 'rgba(8,15,28,0.92)',
-                  border: '1px solid rgba(34,224,255,0.35)',
+                  border: '1px solid color-mix(in srgb, var(--color-accent) 35%, transparent)',
                   borderRadius: 8,
                   color: '#dcecf7',
-                  boxShadow: '0 0 20px -4px rgba(34,224,255,0.5)',
+                  boxShadow: '0 0 20px -4px color-mix(in srgb, var(--color-accent) 50%, transparent)',
                 }}
               />
               <Legend wrapperStyle={{ fontSize: 12, color: '#94a3b8' }} />
