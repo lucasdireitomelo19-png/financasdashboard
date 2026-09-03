@@ -34,6 +34,7 @@ interface GoogleEvent {
   updated?: string
   start?: { date?: string; dateTime?: string }
   end?: { date?: string; dateTime?: string }
+  eventType?: string
 }
 
 async function googleFetch<T>(accessToken: string, path: string, init?: RequestInit): Promise<T | null> {
@@ -262,7 +263,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // manda a versão local pro Google
     for (const local of localEvents) {
       if (!local.google_event_id || pulledFromGoogleIds.has(local.google_event_id)) continue
-      if (!googleById.has(local.google_event_id)) continue
+      const googleEvent = googleById.get(local.google_event_id)
+      if (!googleEvent) continue
+      // eventos especiais (aniversário, fora do escritório, etc.) são
+      // gerados automaticamente pelo Google e não podem ser editados via
+      // API do jeito normal — só sincroniza eventos "default"
+      if (googleEvent.eventType && googleEvent.eventType !== 'default') continue
       await updateGoogleEvent(accessToken!, calendarId, local.google_event_id, {
         title: local.title,
         date: local.event_date,
