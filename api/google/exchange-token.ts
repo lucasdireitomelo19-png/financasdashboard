@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { CALENDAR_TIMEZONE } from '../_lib/google'
+import { CALENDAR_TIMEZONE } from '../_lib/google.js'
 
 /** DIAGNÓSTICO 5 — isola se importar QUALQUER coisa da pasta _lib/ já
  * derruba a função (independente de usar @supabase/supabase-js ou não).
