@@ -22,7 +22,7 @@ export function QuickAddAgenda({ onCreate }: QuickAddAgendaProps) {
     setSaving(true)
     setFeedback(null)
     const parsed = parseAgendaInput(text)
-    const result = await onCreate({ title: parsed.title, event_date: parsed.date, event_time: parsed.time, notes: null, done: false, google_event_id: null })
+    const result = await onCreate({ title: parsed.title, event_date: parsed.date, event_time: parsed.time, notes: null, done: false, google_event_id: null, category: 'pessoal' })
     setSaving(false)
     if (result.error) {
       setFeedback(`Não deu pra salvar: ${result.error}`)

@@ -449,6 +449,11 @@ create policy "agenda_events_delete_own" on public.agenda_events
 alter table public.agenda_events add column if not exists google_event_id text;
 create unique index if not exists agenda_events_google_event_idx on public.agenda_events (user_id, google_event_id) where google_event_id is not null;
 
+-- categoria pra colorir/filtrar a agenda (trabalho, pessoal, outro)
+alter table public.agenda_events add column if not exists category text not null default 'pessoal';
+alter table public.agenda_events drop constraint if exists agenda_events_category_check;
+alter table public.agenda_events add constraint agenda_events_category_check check (category in ('trabalho', 'pessoal', 'outro'));
+
 -- ----------------------------------------------------------------------------
 -- google_calendar_connections: uma linha por usuário conectado ao Google
 -- Agenda. Os tokens só são lidos/gravados pelas serverless functions

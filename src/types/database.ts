@@ -150,6 +150,8 @@ export interface SavingsGoalContribution {
   created_at: string
 }
 
+export type AgendaEventCategory = 'trabalho' | 'pessoal' | 'outro'
+
 export interface AgendaEvent {
   id: string
   user_id: string
@@ -159,6 +161,7 @@ export interface AgendaEvent {
   notes: string | null
   done: boolean
   google_event_id: string | null
+  category: AgendaEventCategory
   created_at: string
   updated_at: string
 }

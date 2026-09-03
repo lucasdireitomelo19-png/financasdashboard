@@ -1,4 +1,10 @@
-import type { InvestmentCategory, InvestmentMovementType, PaymentAccountType, PaymentMethod } from '../types/database'
+import type { AgendaEventCategory, InvestmentCategory, InvestmentMovementType, PaymentAccountType, PaymentMethod } from '../types/database'
+
+export const AGENDA_CATEGORY_META: Record<AgendaEventCategory, { label: string; color: string }> = {
+  trabalho: { label: 'Trabalho', color: '#3b82f6' },
+  pessoal: { label: 'Pessoal', color: '#ec4899' },
+  outro: { label: 'Outro', color: '#64748b' },
+}
 
 export const DEFAULT_CATEGORIES: { name: string; type: 'expense' | 'income'; color: string; icon: string }[] = [
   // gastos

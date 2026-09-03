@@ -8,7 +8,8 @@ import { QuickAddAgenda } from '../components/QuickAddAgenda'
 import { ErrorText, FormField, PrimaryButton, TextArea, TextInput } from '../components/FormField'
 import { formatDate, todayIso } from '../lib/format'
 import { triggerSaveFeedback } from '../lib/feedback'
-import type { AgendaEvent } from '../types/database'
+import { AGENDA_CATEGORY_META as CATEGORY_META } from '../lib/constants'
+import type { AgendaEvent, AgendaEventCategory } from '../types/database'
 
 export function Agenda() {
   const { user } = useAuth()
@@ -19,6 +20,7 @@ export function Agenda() {
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState<AgendaEvent | null>(null)
   const [openMenu, setOpenMenu] = useState<string | null>(null)
+  const [categoryFilter, setCategoryFilter] = useState<AgendaEventCategory | 'all'>('all')
 
   // volta do consentimento do Google com ?code=... na URL — troca pelo
   // token e já sincroniza uma vez
@@ -44,11 +46,12 @@ export function Agenda() {
   const grouped = useMemo(() => {
     const map = new Map<string, AgendaEvent[]>()
     for (const e of events) {
+      if (categoryFilter !== 'all' && e.category !== categoryFilter) continue
       if (!map.has(e.event_date)) map.set(e.event_date, [])
       map.get(e.event_date)!.push(e)
     }
     return Array.from(map.entries())
-  }, [events])
+  }, [events, categoryFilter])
 
   const today = todayIso()
 
@@ -57,7 +60,7 @@ export function Agenda() {
     setModalOpen(true)
   }
 
-  const handleSubmit = async (values: { title: string; event_date: string; event_time: string; notes: string }) => {
+  const handleSubmit = async (values: { title: string; event_date: string; event_time: string; notes: string; category: AgendaEventCategory }) => {
     const payload = {
       title: values.title,
       event_date: values.event_date,
@@ -65,6 +68,7 @@ export function Agenda() {
       notes: values.notes || null,
       done: editing?.done ?? false,
       google_event_id: editing?.google_event_id ?? null,
+      category: values.category,
     }
     const result = editing ? await update(editing.id, payload) : await create(payload)
     if (!result.error) {
@@ -146,6 +150,32 @@ export function Agenda() {
 
       <QuickAddAgenda onCreate={create} />
 
+      <div className="flex flex-wrap gap-2">
+        <button
+          onClick={() => setCategoryFilter('all')}
+          className={`rounded-full border px-3 py-1 font-display text-[10px] font-semibold uppercase tracking-wider transition ${
+            categoryFilter === 'all' ? 'border-cyan-400/50 bg-cyan-400/10 text-cyan-200' : 'border-cyan-500/15 text-slate-400 hover:border-cyan-500/30'
+          }`}
+        >
+          Todos
+        </button>
+        {(Object.keys(CATEGORY_META) as AgendaEventCategory[]).map((cat) => {
+          const meta = CATEGORY_META[cat]
+          const active = categoryFilter === cat
+          return (
+            <button
+              key={cat}
+              onClick={() => setCategoryFilter(cat)}
+              className="flex items-center gap-1.5 rounded-full border px-3 py-1 font-display text-[10px] font-semibold uppercase tracking-wider transition"
+              style={active ? { borderColor: `${meta.color}80`, background: `${meta.color}1a`, color: meta.color } : { borderColor: 'rgba(6,182,212,0.15)', color: '#94a3b8' }}
+            >
+              <span className="h-2 w-2 rounded-full" style={{ background: meta.color }} aria-hidden="true" />
+              {meta.label}
+            </button>
+          )
+        })}
+      </div>
+
       <div className="hud-panel p-4">
         {loading ? (
           <p className="py-8 text-center text-sm text-slate-500">Carregando...</p>
@@ -161,7 +191,11 @@ export function Agenda() {
                 </p>
                 <ul className="space-y-2">
                   {items.map((e) => (
-                    <li key={e.id} className="relative flex items-start gap-3 rounded-lg border border-cyan-500/10 bg-[#0a1120]/40 p-3">
+                    <li
+                      key={e.id}
+                      className="relative flex items-start gap-3 rounded-lg border border-cyan-500/10 bg-[#0a1120]/40 p-3"
+                      style={{ borderLeft: `3px solid ${(CATEGORY_META[e.category] ?? CATEGORY_META.outro).color}` }}
+                    >
                       <button
                         onClick={() => void toggleDone(e)}
                         className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-[11px] ${
@@ -172,7 +206,10 @@ export function Agenda() {
                         ✓
                       </button>
                       <div className="min-w-0 flex-1">
-                        <p className={`text-sm font-medium ${e.done ? 'text-slate-500 line-through' : 'text-slate-200'}`}>{e.title}</p>
+                        <div className="flex items-center gap-1.5">
+                          <span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: (CATEGORY_META[e.category] ?? CATEGORY_META.outro).color }} aria-hidden="true" />
+                          <p className={`truncate text-sm font-medium ${e.done ? 'text-slate-500 line-through' : 'text-slate-200'}`}>{e.title}</p>
+                        </div>
                         <p className="mt-0.5 text-xs text-slate-500">{e.event_time ? e.event_time.slice(0, 5) : 'Dia todo'}</p>
                         {e.notes && <p className="mt-1 text-xs text-slate-500">{e.notes}</p>}
                       </div>
@@ -236,12 +273,13 @@ function AgendaEventForm({
 }: {
   initial?: AgendaEvent | null
   onCancel: () => void
-  onSubmit: (values: { title: string; event_date: string; event_time: string; notes: string }) => Promise<{ error: string | null }>
+  onSubmit: (values: { title: string; event_date: string; event_time: string; notes: string; category: AgendaEventCategory }) => Promise<{ error: string | null }>
 }) {
   const [title, setTitle] = useState(initial?.title ?? '')
   const [date, setDate] = useState(initial?.event_date ?? todayIso())
   const [time, setTime] = useState(initial?.event_time?.slice(0, 5) ?? '')
   const [notes, setNotes] = useState(initial?.notes ?? '')
+  const [category, setCategory] = useState<AgendaEventCategory>(initial?.category ?? 'pessoal')
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
 
@@ -257,7 +295,7 @@ function AgendaEventForm({
       return
     }
     setSaving(true)
-    const result = await onSubmit({ title: title.trim(), event_date: date, event_time: time, notes: notes.trim() })
+    const result = await onSubmit({ title: title.trim(), event_date: date, event_time: time, notes: notes.trim(), category })
     setSaving(false)
     if (result.error) setError(result.error)
   }
@@ -278,6 +316,27 @@ function AgendaEventForm({
           <TextInput type="time" value={time} onChange={(e) => setTime(e.target.value)} />
         </FormField>
       </div>
+
+      <FormField label="Categoria">
+        <div className="flex gap-2">
+          {(Object.keys(CATEGORY_META) as AgendaEventCategory[]).map((cat) => {
+            const meta = CATEGORY_META[cat]
+            const active = category === cat
+            return (
+              <button
+                key={cat}
+                type="button"
+                onClick={() => setCategory(cat)}
+                className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border px-2 py-2 font-display text-[10px] font-semibold uppercase tracking-wider transition"
+                style={active ? { borderColor: `${meta.color}80`, background: `${meta.color}1a`, color: meta.color } : { borderColor: 'rgba(6,182,212,0.15)', color: '#94a3b8' }}
+              >
+                <span className="h-2 w-2 rounded-full" style={{ background: meta.color }} aria-hidden="true" />
+                {meta.label}
+              </button>
+            )
+          })}
+        </div>
+      </FormField>
 
       <FormField label="Notas (opcional)">
         <TextArea rows={3} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Detalhes, local, o que levar..." />

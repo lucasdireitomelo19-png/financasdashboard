@@ -8,7 +8,7 @@ import { useAgendaEvents } from '../hooks/useAgendaEvents'
 import { useRecurringSync } from '../hooks/useRecurringSync'
 import { supabase } from '../lib/supabase'
 import { formatCurrency, formatDate, formatMonthLabel, monthsAgoRange, todayIso } from '../lib/format'
-import { CHART_COLORS } from '../lib/constants'
+import { CHART_COLORS, AGENDA_CATEGORY_META } from '../lib/constants'
 import { currentCreditCardCycle, computeVrBalance, cycleRangeIso } from '../lib/accountCycles'
 import { computeInsights, type Insight } from '../lib/insights'
 import { AnimatedNumber } from '../components/AnimatedNumber'
@@ -247,7 +247,14 @@ export function Dashboard() {
           <ul className="divide-y divide-cyan-500/10">
             {upcomingEvents.map((e) => (
               <li key={e.id} className="flex items-center justify-between gap-2 py-2">
-                <span className="min-w-0 truncate text-sm text-slate-200">{e.title}</span>
+                <span className="flex min-w-0 items-center gap-1.5">
+                  <span
+                    className="h-1.5 w-1.5 shrink-0 rounded-full"
+                    style={{ background: (AGENDA_CATEGORY_META[e.category] ?? AGENDA_CATEGORY_META.outro).color }}
+                    aria-hidden="true"
+                  />
+                  <span className="min-w-0 truncate text-sm text-slate-200">{e.title}</span>
+                </span>
                 <span className="shrink-0 text-xs text-slate-500">
                   {formatDate(e.event_date)}
                   {e.event_time ? ` · ${e.event_time.slice(0, 5)}` : ''}
