@@ -12,7 +12,7 @@ interface TokenResponse {
 export async function exchangeCodeForTokens(code: string, redirectUri: string): Promise<TokenResponse> {
   const params = new URLSearchParams({
     code,
-    client_id: process.env.GOOGLE_CLIENT_ID!,
+    client_id: process.env.VITE_GOOGLE_CLIENT_ID!,
     client_secret: process.env.GOOGLE_CLIENT_SECRET!,
     redirect_uri: redirectUri,
     grant_type: 'authorization_code',
@@ -25,7 +25,7 @@ export async function exchangeCodeForTokens(code: string, redirectUri: string): 
 export async function refreshAccessToken(refreshToken: string): Promise<TokenResponse> {
   const params = new URLSearchParams({
     refresh_token: refreshToken,
-    client_id: process.env.GOOGLE_CLIENT_ID!,
+    client_id: process.env.VITE_GOOGLE_CLIENT_ID!,
     client_secret: process.env.GOOGLE_CLIENT_SECRET!,
     grant_type: 'refresh_token',
   })
