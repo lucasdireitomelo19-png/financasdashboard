@@ -1,36 +1,18 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { createClient } from '@supabase/supabase-js'
+import { CALENDAR_TIMEZONE } from '../_lib/google'
 
-/** DIAGNÓSTICO 4 — isola se a chamada de rede client.auth.getUser(token)
- * (validar o JWT do usuário contra o Supabase Auth) é o que derruba a
- * função. Tudo inline, sem passar pelo _lib/supabaseAdmin.ts. Remover
- * depois. */
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+/** DIAGNÓSTICO 5 — isola se importar QUALQUER coisa da pasta _lib/ já
+ * derruba a função (independente de usar @supabase/supabase-js ou não).
+ * CALENDAR_TIMEZONE é só uma constante, sem nenhuma dependência externa.
+ * Remover depois. */
+export default async function handler(_req: VercelRequest, res: VercelResponse) {
   try {
-    const auth = req.headers.authorization
-    if (!auth || !auth.startsWith('Bearer ')) {
-      res.status(200).json({ ok: false, reason: 'no-auth-header' })
-      return
-    }
-
-    const url = process.env.VITE_SUPABASE_URL
-    const anonKey = process.env.VITE_SUPABASE_ANON_KEY
-    if (!url || !anonKey) {
-      res.status(200).json({ ok: false, reason: 'missing-env', hasUrl: !!url, hasAnonKey: !!anonKey })
-      return
-    }
-
-    const client = createClient(url, anonKey, { auth: { persistSession: false } })
-    const token = auth.slice('Bearer '.length)
-    const { data, error } = await client.auth.getUser(token)
-
-    res.status(200).json({ ok: true, hasUser: !!data.user, error: error?.message ?? null })
+    res.status(200).json({ ok: true, timezone: CALENDAR_TIMEZONE })
   } catch (err) {
     res.status(200).json({
       ok: false,
       crashed: true,
       message: err instanceof Error ? err.message : String(err),
-      stack: err instanceof Error ? err.stack : null,
     })
   }
 }
