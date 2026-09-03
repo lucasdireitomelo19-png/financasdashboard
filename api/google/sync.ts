@@ -53,7 +53,7 @@ async function listGoogleEvents(accessToken: string, calendarId: string, timeMin
 
 function toGoogleTime(date: string, time: string | null) {
   if (!time) return { date }
-  return { dateTime: `${date}T${time}:00`, timeZone: CALENDAR_TIMEZONE }
+  return { dateTime: `${date}T${time.slice(0, 5)}:00`, timeZone: CALENDAR_TIMEZONE }
 }
 
 function addOneHour(time: string): string {
