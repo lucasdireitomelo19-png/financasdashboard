@@ -9,13 +9,13 @@ import { exchangeCodeForTokens } from '../_lib/google'
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Método não permitido' })
 
-  const user = await getUserFromRequest(req)
-  if (!user) return res.status(401).json({ error: 'Não autenticado' })
-
-  const { code, redirectUri } = req.body ?? {}
-  if (!code || !redirectUri) return res.status(400).json({ error: 'Faltando code/redirectUri' })
-
   try {
+    const user = await getUserFromRequest(req)
+    if (!user) return res.status(401).json({ error: 'Não autenticado' })
+
+    const { code, redirectUri } = req.body ?? {}
+    if (!code || !redirectUri) return res.status(400).json({ error: 'Faltando code/redirectUri' })
+
     const tokens = await exchangeCodeForTokens(code, redirectUri)
     const admin = getServiceClient()
 

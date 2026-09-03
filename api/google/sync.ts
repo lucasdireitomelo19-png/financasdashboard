@@ -36,15 +36,15 @@ interface LocalEvent {
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Método não permitido' })
 
-  const user = await getUserFromRequest(req)
-  if (!user) return res.status(401).json({ error: 'Não autenticado' })
-
-  const admin = getServiceClient()
-
-  const { data: conn } = await admin.from('google_calendar_connections').select('*').eq('user_id', user.id).maybeSingle()
-  if (!conn) return res.status(400).json({ error: 'Conta Google não conectada' })
-
   try {
+    const user = await getUserFromRequest(req)
+    if (!user) return res.status(401).json({ error: 'Não autenticado' })
+
+    const admin = getServiceClient()
+
+    const { data: conn } = await admin.from('google_calendar_connections').select('*').eq('user_id', user.id).maybeSingle()
+    if (!conn) return res.status(400).json({ error: 'Conta Google não conectada' })
+
     let accessToken = conn.access_token as string | null
     const expiresAt = conn.access_token_expires_at ? new Date(conn.access_token_expires_at).getTime() : 0
     if (!accessToken || expiresAt < Date.now() + 60_000) {
