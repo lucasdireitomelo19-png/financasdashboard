@@ -120,6 +120,18 @@ export function Agenda() {
               <p className="mt-1 text-sm text-slate-400">Não conectado</p>
             )}
             {google.error && <p className="mt-1 text-xs text-rose-400">{google.error}</p>}
+            {google.syncErrors.length > 0 && (
+              <div className="mt-1 space-y-0.5">
+                <p className="text-xs text-amber-400">
+                  {google.syncErrors.length} compromisso{google.syncErrors.length > 1 ? 's' : ''} não sincronizou{google.syncErrors.length > 1 ? 'aram' : ''}:
+                </p>
+                {google.syncErrors.map((msg, i) => (
+                  <p key={i} className="text-xs text-amber-400/80">
+                    {msg}
+                  </p>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="flex gap-2">

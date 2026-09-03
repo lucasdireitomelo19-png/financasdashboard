@@ -210,6 +210,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const matchedGoogleIds = new Set<string>()
     const pulledFromGoogleIds = new Set<string>()
     const lastSync = conn.last_synced_at ? new Date(conn.last_synced_at).getTime() : 0
+    // erros de eventos individuais não abortam a sincronização inteira —
+    // cada evento é isolado, então um problema num compromisso não trava
+    // os outros. Os erros coletados aqui voltam pro app pra mostrar ao
+    // usuário qual compromisso específico não sincronizou.
+    const errors: string[] = []
 
     // 1) eventos do Google que já têm vínculo local: se o Google tem uma
     // versão mais nova que a última sincronização, atualiza o app
@@ -219,43 +224,55 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       matchedGoogleIds.add(googleId)
       const googleUpdated = g.updated ? new Date(g.updated).getTime() : 0
       if (googleUpdated > lastSync) {
-        const { date, time } = parseGoogleEventDateTime(g)
-        await admin
-          .from('agenda_events')
-          .update({ title: g.summary || local.title, event_date: date, event_time: time, notes: g.description ?? null, updated_at: new Date().toISOString() })
-          .eq('id', local.id)
-        updatedFromGoogle++
-        pulledFromGoogleIds.add(googleId)
+        try {
+          const { date, time } = parseGoogleEventDateTime(g)
+          await admin
+            .from('agenda_events')
+            .update({ title: g.summary || local.title, event_date: date, event_time: time, notes: g.description ?? null, updated_at: new Date().toISOString() })
+            .eq('id', local.id)
+          updatedFromGoogle++
+          pulledFromGoogleIds.add(googleId)
+        } catch (err) {
+          errors.push(`"${local.title}": ${err instanceof Error ? err.message : 'erro desconhecido'}`)
+        }
       }
     }
 
     // 2) eventos novos no Google (sem vínculo local) → cria localmente
     for (const g of googleEvents) {
       if (matchedGoogleIds.has(g.id)) continue
-      const { date, time } = parseGoogleEventDateTime(g)
-      await admin.from('agenda_events').insert({
-        user_id: user.id,
-        title: g.summary || 'Sem título',
-        event_date: date,
-        event_time: time,
-        notes: g.description ?? null,
-        google_event_id: g.id,
-        done: false,
-      })
-      pulled++
+      try {
+        const { date, time } = parseGoogleEventDateTime(g)
+        await admin.from('agenda_events').insert({
+          user_id: user.id,
+          title: g.summary || 'Sem título',
+          event_date: date,
+          event_time: time,
+          notes: g.description ?? null,
+          google_event_id: g.id,
+          done: false,
+        })
+        pulled++
+      } catch (err) {
+        errors.push(`"${g.summary ?? 'Sem título'}" (do Google): ${err instanceof Error ? err.message : 'erro desconhecido'}`)
+      }
     }
 
     // 3) compromissos locais sem vínculo → cria no Google
     for (const local of localEvents) {
       if (local.google_event_id) continue
-      const created: GoogleEvent = await createGoogleEvent(accessToken!, calendarId, {
-        title: local.title,
-        date: local.event_date,
-        time: local.event_time,
-        notes: local.notes,
-      })
-      await admin.from('agenda_events').update({ google_event_id: created.id }).eq('id', local.id)
-      pushed++
+      try {
+        const created: GoogleEvent = await createGoogleEvent(accessToken!, calendarId, {
+          title: local.title,
+          date: local.event_date,
+          time: local.event_time,
+          notes: local.notes,
+        })
+        await admin.from('agenda_events').update({ google_event_id: created.id }).eq('id', local.id)
+        pushed++
+      } catch (err) {
+        errors.push(`"${local.title}": ${err instanceof Error ? err.message : 'erro desconhecido'}`)
+      }
     }
 
     // 4) compromissos locais já vinculados que o Google NÃO tinha uma
@@ -269,18 +286,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       // gerados automaticamente pelo Google e não podem ser editados via
       // API do jeito normal — só sincroniza eventos "default"
       if (googleEvent.eventType && googleEvent.eventType !== 'default') continue
-      await updateGoogleEvent(accessToken!, calendarId, local.google_event_id, {
-        title: local.title,
-        date: local.event_date,
-        time: local.event_time,
-        notes: local.notes,
-      })
-      pushed++
+      try {
+        await updateGoogleEvent(accessToken!, calendarId, local.google_event_id, {
+          title: local.title,
+          date: local.event_date,
+          time: local.event_time,
+          notes: local.notes,
+        })
+        pushed++
+      } catch (err) {
+        errors.push(`"${local.title}": ${err instanceof Error ? err.message : 'erro desconhecido'}`)
+      }
     }
 
     await admin.from('google_calendar_connections').update({ last_synced_at: new Date().toISOString() }).eq('user_id', user.id)
 
-    return res.status(200).json({ pushed, pulled, updatedFromGoogle })
+    return res.status(200).json({ pushed, pulled, updatedFromGoogle, errors })
   } catch (err) {
     return res.status(500).json({ error: err instanceof Error ? err.message : 'Erro desconhecido' })
   }

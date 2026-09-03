@@ -12,6 +12,7 @@ export function useGoogleCalendar() {
   const [loading, setLoading] = useState(true)
   const [syncing, setSyncing] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [syncErrors, setSyncErrors] = useState<string[]>([])
 
   const refetch = useCallback(async () => {
     if (!session?.user) return
@@ -49,12 +50,14 @@ export function useGoogleCalendar() {
     if (!session?.access_token) return { error: 'Sem sessão' }
     setSyncing(true)
     setError(null)
+    setSyncErrors([])
     const { data, error: err } = await syncGoogleCalendar(session.access_token)
     setSyncing(false)
     if (err) {
       setError(err)
       return { error: err }
     }
+    setSyncErrors(data?.errors ?? [])
     await refetch()
     return { error: null, result: data }
   }, [session, refetch])
@@ -66,5 +69,5 @@ export function useGoogleCalendar() {
     return { error: err }
   }, [session])
 
-  return { connection, loading, syncing, error, connect, completeConnection, sync, disconnect }
+  return { connection, loading, syncing, error, syncErrors, connect, completeConnection, sync, disconnect }
 }

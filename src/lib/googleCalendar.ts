@@ -34,7 +34,7 @@ export function exchangeGoogleCode(code: string, redirectUri: string, accessToke
 }
 
 export function syncGoogleCalendar(accessToken: string) {
-  return callApi<{ pushed: number; pulled: number; updatedFromGoogle: number }>('/api/google/sync', accessToken)
+  return callApi<{ pushed: number; pulled: number; updatedFromGoogle: number; errors: string[] }>('/api/google/sync', accessToken)
 }
 
 export function disconnectGoogleCalendar(accessToken: string) {
