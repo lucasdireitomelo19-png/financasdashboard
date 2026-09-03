@@ -1,14 +1,30 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
+import { createClient } from '@supabase/supabase-js'
 
-/** DIAGNÓSTICO 3 — testa se importar @supabase/supabase-js diretamente
- * (sem passar pelo nosso _lib/supabaseAdmin.ts) já derruba a função.
- * Import dinâmico dentro do try pra garantir que qualquer erro de
- * carregamento do módulo também seja capturado. Remover depois. */
-export default async function handler(_req: VercelRequest, res: VercelResponse) {
+/** DIAGNÓSTICO 4 — isola se a chamada de rede client.auth.getUser(token)
+ * (validar o JWT do usuário contra o Supabase Auth) é o que derruba a
+ * função. Tudo inline, sem passar pelo _lib/supabaseAdmin.ts. Remover
+ * depois. */
+export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
-    const { createClient } = await import('@supabase/supabase-js')
-    const client = createClient('https://example.supabase.co', 'fake-key', { auth: { persistSession: false } })
-    res.status(200).json({ ok: true, hasClient: !!client })
+    const auth = req.headers.authorization
+    if (!auth || !auth.startsWith('Bearer ')) {
+      res.status(200).json({ ok: false, reason: 'no-auth-header' })
+      return
+    }
+
+    const url = process.env.VITE_SUPABASE_URL
+    const anonKey = process.env.VITE_SUPABASE_ANON_KEY
+    if (!url || !anonKey) {
+      res.status(200).json({ ok: false, reason: 'missing-env', hasUrl: !!url, hasAnonKey: !!anonKey })
+      return
+    }
+
+    const client = createClient(url, anonKey, { auth: { persistSession: false } })
+    const token = auth.slice('Bearer '.length)
+    const { data, error } = await client.auth.getUser(token)
+
+    res.status(200).json({ ok: true, hasUser: !!data.user, error: error?.message ?? null })
   } catch (err) {
     res.status(200).json({
       ok: false,
