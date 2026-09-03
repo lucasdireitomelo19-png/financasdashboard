@@ -1,13 +1,14 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { getUserFromRequest } from '../_lib/supabaseAdmin'
 
-/** DIAGNÓSTICO TEMPORÁRIO — isola se importar/usar supabaseAdmin.ts é o
- * que derruba a função. Devolve sempre 200 com o erro real no corpo (se
- * houver), pra aparecer direto na aba Network. Remover depois. */
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+/** DIAGNÓSTICO 3 — testa se importar @supabase/supabase-js diretamente
+ * (sem passar pelo nosso _lib/supabaseAdmin.ts) já derruba a função.
+ * Import dinâmico dentro do try pra garantir que qualquer erro de
+ * carregamento do módulo também seja capturado. Remover depois. */
+export default async function handler(_req: VercelRequest, res: VercelResponse) {
   try {
-    const user = await getUserFromRequest(req)
-    res.status(200).json({ ok: true, userId: user?.id ?? null })
+    const { createClient } = await import('@supabase/supabase-js')
+    const client = createClient('https://example.supabase.co', 'fake-key', { auth: { persistSession: false } })
+    res.status(200).json({ ok: true, hasClient: !!client })
   } catch (err) {
     res.status(200).json({
       ok: false,
