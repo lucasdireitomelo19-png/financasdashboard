@@ -157,6 +157,7 @@ alter table public.transactions add column if not exists account_id uuid referen
 alter table public.transactions add column if not exists installment_group_id uuid;
 alter table public.transactions add column if not exists installment_number int check (installment_number > 0);
 alter table public.transactions add column if not exists installment_total int check (installment_total > 0);
+alter table public.transactions add column if not exists is_company boolean not null default false;
 
 create index if not exists transactions_user_date_idx on public.transactions (user_id, date desc);
 create index if not exists transactions_user_type_idx on public.transactions (user_id, type);

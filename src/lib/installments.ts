@@ -9,12 +9,13 @@ export interface InstallmentPlanInput {
   category_id: string | null
   payment_method: Transaction['payment_method']
   account_id: string | null
+  is_company: boolean
 }
 
 /** Divide o valor total em N parcelas (a última absorve o arredondamento) e
  * gera uma transação por parcela, uma por mês a partir da data informada. */
 export function buildInstallmentRows(input: InstallmentPlanInput): Omit<Transaction, 'id' | 'created_at' | 'user_id'>[] {
-  const { totalAmount, installments, firstDate, description, category_id, payment_method, account_id } = input
+  const { totalAmount, installments, firstDate, description, category_id, payment_method, account_id, is_company } = input
   const base = Math.round((totalAmount / installments) * 100) / 100
   const rows: Omit<Transaction, 'id' | 'created_at' | 'user_id'>[] = []
   const groupId = crypto.randomUUID()
@@ -39,6 +40,7 @@ export function buildInstallmentRows(input: InstallmentPlanInput): Omit<Transact
       installment_group_id: groupId,
       installment_number: n,
       installment_total: installments,
+      is_company,
       notes: null,
     })
   }

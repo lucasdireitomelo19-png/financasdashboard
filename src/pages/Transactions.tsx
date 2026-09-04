@@ -30,6 +30,7 @@ export function Transactions() {
     endDate: defaultRange.end,
     search: searchParams.get('q') ?? '',
     variableOnly: false,
+    companyOnly: false,
   })
   const { transactions, loading, create, createMany, update, remove, removeInstallmentGroup } = useTransactions(user?.id, filters)
 
@@ -97,6 +98,7 @@ export function Transactions() {
         category_id: values.category_id || null,
         payment_method: values.payment_method || null,
         account_id: values.account_id || null,
+        is_company: values.is_company,
       })
       const result = await createMany(rows)
       if (!result.error) {
@@ -119,6 +121,7 @@ export function Transactions() {
       installment_group_id: editing?.installment_group_id ?? null,
       installment_number: editing?.installment_number ?? null,
       installment_total: editing?.installment_total ?? null,
+      is_company: values.is_company,
       notes: values.notes || null,
     }
     const result = editing ? await update(editing.id, payload) : await create(payload)
@@ -144,7 +147,7 @@ export function Transactions() {
   }
 
   const clearFilters = () =>
-    setFilters({ type: 'all', categoryId: 'all', accountId: 'all', paymentMethod: 'all', startDate: '', endDate: '', search: '', variableOnly: false })
+    setFilters({ type: 'all', categoryId: 'all', accountId: 'all', paymentMethod: 'all', startDate: '', endDate: '', search: '', variableOnly: false, companyOnly: false })
 
   return (
     <div className="space-y-4">
@@ -201,16 +204,27 @@ export function Transactions() {
           <TextInput type="text" placeholder="Buscar..." value={filters.search} onChange={(e) => setFilters((f) => ({ ...f, search: e.target.value }))} />
         </div>
 
-        <div className="mt-2 flex items-center justify-between">
-          <label className="flex items-center gap-2 text-sm text-slate-400">
-            <input
-              type="checkbox"
-              checked={filters.variableOnly}
-              onChange={(e) => setFilters((f) => ({ ...f, variableOnly: e.target.checked }))}
-              className="h-4 w-4 accent-cyan-400"
-            />
-            Só variáveis/não planejados
-          </label>
+        <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+          <div className="flex flex-wrap items-center gap-4">
+            <label className="flex items-center gap-2 text-sm text-slate-400">
+              <input
+                type="checkbox"
+                checked={filters.variableOnly}
+                onChange={(e) => setFilters((f) => ({ ...f, variableOnly: e.target.checked }))}
+                className="h-4 w-4 accent-cyan-400"
+              />
+              Só variáveis/não planejados
+            </label>
+            <label className="flex items-center gap-2 text-sm text-slate-400">
+              <input
+                type="checkbox"
+                checked={filters.companyOnly}
+                onChange={(e) => setFilters((f) => ({ ...f, companyOnly: e.target.checked }))}
+                className="h-4 w-4 accent-cyan-400"
+              />
+              🏢 Só gastos da empresa
+            </label>
+          </div>
           <button onClick={clearFilters} className="text-xs text-slate-400 hover:text-cyan-300">
             Limpar filtros
           </button>
@@ -246,6 +260,11 @@ export function Transactions() {
                                   style={{ background: `${account.color}26`, color: account.color, boxShadow: `0 0 6px -2px ${account.color}` }}
                                 >
                                   {account.icon} {account.name}
+                                </span>
+                              )}
+                              {t.is_company && (
+                                <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-amber-500/15 px-1.5 py-0.5 text-[10px] font-semibold text-amber-400">
+                                  🏢 Empresa
                                 </span>
                               )}
                             </div>

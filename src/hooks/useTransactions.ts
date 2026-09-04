@@ -10,6 +10,7 @@ export interface TransactionFilters {
   endDate?: string
   paymentMethod?: string | 'all'
   variableOnly?: boolean
+  companyOnly?: boolean
   search?: string
 }
 
@@ -29,12 +30,13 @@ export function useTransactions(userId: string | undefined, filters: Transaction
     if (filters.endDate) query = query.lte('date', filters.endDate)
     if (filters.paymentMethod && filters.paymentMethod !== 'all') query = query.eq('payment_method', filters.paymentMethod)
     if (filters.variableOnly) query = query.eq('is_variable', true)
+    if (filters.companyOnly) query = query.eq('is_company', true)
     if (filters.search) query = query.ilike('description', `%${filters.search}%`)
 
     const { data } = await query.limit(1000)
     setTransactions(data ?? [])
     setLoading(false)
-  }, [userId, filters.type, filters.categoryId, filters.accountId, filters.startDate, filters.endDate, filters.paymentMethod, filters.variableOnly, filters.search])
+  }, [userId, filters.type, filters.categoryId, filters.accountId, filters.startDate, filters.endDate, filters.paymentMethod, filters.variableOnly, filters.companyOnly, filters.search])
 
   useEffect(() => {
     void refetch()

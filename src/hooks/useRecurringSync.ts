@@ -40,6 +40,7 @@ export function useRecurringSync(userId: string | undefined, onSynced?: () => vo
           is_variable: false,
           recurring_template_id: template.id,
           account_id: template.account_id,
+          is_company: template.is_company,
           notes: null,
         }))
 

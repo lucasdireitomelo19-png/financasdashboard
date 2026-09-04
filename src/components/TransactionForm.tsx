@@ -15,6 +15,7 @@ export interface TransactionFormValues {
   account_id: string
   is_installment: boolean
   installments: string
+  is_company: boolean
   notes: string
 }
 
@@ -31,6 +32,7 @@ function toValues(t?: Transaction | null, initialType?: TransactionType): Transa
       account_id: '',
       is_installment: false,
       installments: '2',
+      is_company: false,
       notes: '',
     }
   }
@@ -45,6 +47,7 @@ function toValues(t?: Transaction | null, initialType?: TransactionType): Transa
     account_id: t.account_id ?? '',
     is_installment: false,
     installments: '2',
+    is_company: t.is_company,
     notes: t.notes ?? '',
   }
 }
@@ -228,6 +231,13 @@ export function TransactionForm({
             ))}
           </Select>
         </FormField>
+      )}
+
+      {values.type === 'expense' && (
+        <label className="mb-3 flex items-center gap-2 text-sm text-slate-300">
+          <input type="checkbox" checked={values.is_company} onChange={(e) => setValues((v) => ({ ...v, is_company: e.target.checked }))} className="h-4 w-4 accent-cyan-400" />
+          🏢 Gasto da empresa (não pessoal)
+        </label>
       )}
 
       <FormField label="Observações (opcional)">

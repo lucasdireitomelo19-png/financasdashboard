@@ -61,6 +61,7 @@ export interface Transaction {
   installment_group_id: string | null
   installment_number: number | null
   installment_total: number | null
+  is_company: boolean
   notes: string | null
   created_at: string
 }
