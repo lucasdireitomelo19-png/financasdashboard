@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend, LineChart, Line } from 'recharts'
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend, AreaChart, Area } from 'recharts'
 import { useAuth } from '../context/AuthContext'
 import { useCategories } from '../hooks/useCategories'
 import { useInvestments } from '../hooks/useInvestments'
@@ -169,6 +169,10 @@ export function Dashboard() {
 
   const recent = [...currentMonthTx].sort((a, b) => (a.date < b.date ? 1 : -1)).slice(0, 6)
 
+  const entradasSeries = useMemo(() => evolution.map((m) => m.entradas), [evolution])
+  const saidasSeries = useMemo(() => evolution.map((m) => m.saidas), [evolution])
+  const saldoSeries = useMemo(() => evolution.map((m) => m.entradas - m.saidas), [evolution])
+
   return (
     <div className="space-y-7">
       <div>
@@ -179,39 +183,53 @@ export function Dashboard() {
       </div>
 
       <TiltCard>
-        <div className="hud-panel p-5">
-          <p className="font-display text-[10px] uppercase tracking-wider text-slate-500">Patrimônio líquido</p>
-          <p className="glow-text mt-1 font-display text-3xl font-bold text-cyan-300">
-            {loading || loadingInvestments ? '···' : <AnimatedNumber value={netWorth} format={formatCurrency} />}
-          </p>
-          <p className="mt-1 text-xs text-slate-500">Soma de todos os seus investimentos</p>
-
-          {avgMonthlySavings !== 0 && (
-            <div className="mt-4 border-t border-cyan-500/15 pt-4">
-              <p className="mb-2 text-xs text-slate-400">
-                Guardando sua média de{' '}
-                <span className={avgMonthlySavings >= 0 ? 'text-emerald-300' : 'text-rose-300'}>{formatCurrency(avgMonthlySavings)}/mês</span>, em 6 meses seu patrimônio pode chegar a{' '}
-                <span className="font-semibold text-cyan-200">{formatCurrency(netWorth + avgMonthlySavings * 6)}</span>.
+        <div className="hud-panel relative overflow-hidden p-0" style={{ height: 260 }}>
+          <div className="absolute inset-0">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={projection} margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
+                <defs>
+                  <linearGradient id="heroFill" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#22e0ff" stopOpacity={0.55} />
+                    <stop offset="100%" stopColor="#22e0ff" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <Area type="monotone" dataKey="valor" stroke="#22e0ff" strokeWidth={3} fill="url(#heroFill)" dot={false} isAnimationActive={false} />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+          <div
+            className="absolute inset-0"
+            style={{ background: 'linear-gradient(180deg, rgba(5,8,16,0.15) 0%, rgba(5,8,16,0.55) 55%, rgba(5,8,16,0.92) 100%)' }}
+          />
+          <div className="relative flex h-full flex-col justify-between p-5">
+            <p className="font-display text-[10px] uppercase tracking-wider text-cyan-100/70">Patrimônio líquido</p>
+            <div>
+              <p className="glow-text font-display text-3xl font-bold text-cyan-300">
+                {loading || loadingInvestments ? '···' : <AnimatedNumber value={netWorth} format={formatCurrency} />}
               </p>
-              <ResponsiveContainer width="100%" height={140}>
-                <LineChart data={projection}>
-                  <XAxis dataKey="label" stroke="#3d5872" fontSize={10} tickLine={false} axisLine={false} />
-                  <YAxis hide domain={['dataMin', 'dataMax']} />
-                  <Tooltip formatter={(value) => formatCurrency(Number(value))} contentStyle={HUD_TOOLTIP_STYLE} />
-                  <Line type="monotone" dataKey="valor" stroke="#ffb020" strokeWidth={2} strokeDasharray="5 4" dot={{ r: 3, fill: '#ffb020' }} />
-                </LineChart>
-              </ResponsiveContainer>
-              <p className="mt-1 text-center text-[10px] uppercase tracking-wider text-slate-600">Projeção · não é garantia de rentabilidade</p>
+              <p className="mt-1 text-xs text-slate-300">
+                Guardando sua média de{' '}
+                <span className={avgMonthlySavings >= 0 ? 'text-emerald-300' : 'text-rose-300'}>{formatCurrency(avgMonthlySavings)}/mês</span>, projeção em 6 meses:{' '}
+                <span className="font-semibold text-cyan-200">{formatCurrency(netWorth + avgMonthlySavings * 6)}</span>
+              </p>
             </div>
-          )}
+          </div>
         </div>
       </TiltCard>
+      <p className="-mt-4 text-center text-[10px] uppercase tracking-wider text-slate-600">Projeção · não é garantia de rentabilidade</p>
 
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <StatCard label="Entradas" value={income} color="text-emerald-400" loading={loading} />
-        <StatCard label="Saídas" value={expense} color="text-rose-400" loading={loading} />
-        <StatCard label="Saldo do mês" value={balance} color={balance >= 0 ? 'text-emerald-400' : 'text-rose-400'} loading={loading} />
-        <StatCard label="Patrimônio investido" value={totalInvested} color="text-cyan-300" loading={loadingInvestments} />
+      <div className="grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-white/5 bg-white/5 sm:grid-cols-4">
+        <TickerCell label="Entradas" value={income} color="text-emerald-400" loading={loading} spark={entradasSeries} sparkColor="#2dffb0" />
+        <TickerCell label="Saídas" value={expense} color="text-rose-400" loading={loading} spark={saidasSeries} sparkColor="#ff4d6a" />
+        <TickerCell
+          label="Saldo do mês"
+          value={balance}
+          color={balance >= 0 ? 'text-emerald-400' : 'text-rose-400'}
+          loading={loading}
+          spark={saldoSeries}
+          sparkColor={balance >= 0 ? '#2dffb0' : '#ff4d6a'}
+        />
+        <TickerCell label="Patrimônio investido" value={totalInvested} color="text-cyan-300" loading={loadingInvestments} />
       </div>
 
       {monthlyCompanyExpenses > 0 && (
@@ -375,14 +393,42 @@ export function Dashboard() {
   )
 }
 
-function StatCard({ label, value, color, loading, hint }: { label: string; value: number; color: string; loading: boolean; hint?: string }) {
+function sparkPath(values: number[], w = 52, h = 16) {
+  if (values.length < 2) return ''
+  const min = Math.min(...values)
+  const max = Math.max(...values)
+  const range = max - min || 1
+  const step = w / (values.length - 1)
+  return values.map((v, i) => `${i === 0 ? 'M' : 'L'}${(i * step).toFixed(1)},${(h - ((v - min) / range) * h).toFixed(1)}`).join(' ')
+}
+
+function TickerCell({
+  label,
+  value,
+  color,
+  loading,
+  spark,
+  sparkColor,
+}: {
+  label: string
+  value: number
+  color: string
+  loading: boolean
+  spark?: number[]
+  sparkColor?: string
+}) {
+  const path = spark ? sparkPath(spark) : ''
   return (
-    <div className="panel-calm h-full p-4">
-      <p className="font-display text-[10px] uppercase tracking-wider text-slate-500">{label}</p>
-      <p className={`mt-1 font-display text-lg font-bold ${color}`}>
+    <div className="h-full bg-[rgba(15,23,38,0.7)] p-3">
+      <p className="font-display text-[9px] uppercase tracking-wider text-slate-500">{label}</p>
+      <p className={`mt-1 font-display text-[13px] font-bold ${color}`}>
         {loading ? '···' : <AnimatedNumber value={value} format={formatCurrency} />}
       </p>
-      {hint && <p className="mt-1 text-[10px] text-slate-500">{hint}</p>}
+      {path && (
+        <svg className="mt-1 block" width="52" height="16" viewBox="0 0 52 16">
+          <path d={path} fill="none" stroke={sparkColor ?? '#22e0ff'} strokeWidth={1.5} />
+        </svg>
+      )}
     </div>
   )
 }
