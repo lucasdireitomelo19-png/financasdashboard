@@ -181,7 +181,7 @@ export function Dashboard() {
       <TiltCard>
         <div className="hud-panel p-5">
           <p className="font-display text-[10px] uppercase tracking-wider text-slate-500">Patrimônio líquido</p>
-          <p className="glow-text mt-1 font-display text-3xl font-bold text-cyan-100">
+          <p className="glow-text mt-1 font-display text-3xl font-bold text-cyan-300">
             {loading || loadingInvestments ? '···' : <AnimatedNumber value={netWorth} format={formatCurrency} />}
           </p>
           <p className="mt-1 text-xs text-slate-500">Soma de todos os seus investimentos</p>
