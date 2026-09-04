@@ -70,7 +70,7 @@ export function SavingsGoals({ userId, investments }: { userId: string | undefin
       </div>
 
       {goals.length === 0 ? (
-        <div className="hud-panel p-8 text-center text-sm text-slate-500">Nenhuma meta cadastrada ainda. Crie a primeira e comece a guardar.</div>
+        <div className="panel-calm p-8 text-center text-sm text-slate-500">Nenhuma meta cadastrada ainda. Crie a primeira e comece a guardar.</div>
       ) : (
         <div className="space-y-3">
           {goals.map((g) => {
@@ -78,7 +78,7 @@ export function SavingsGoals({ userId, investments }: { userId: string | undefin
             const contributions = contributionsFor(g.id)
             const remaining = g.target_amount - g.saved
             return (
-              <div key={g.id} className="hud-panel p-4">
+              <div key={g.id} className="panel-calm p-4">
                 <div className="flex items-start justify-between gap-2">
                   <button onClick={() => setExpanded(isOpen ? null : g.id)} className="flex-1 text-left">
                     <div className="flex items-center gap-2">
@@ -91,7 +91,7 @@ export function SavingsGoals({ userId, investments }: { userId: string | undefin
                     )}
                   </button>
                   <div className="text-right">
-                    <p className="glow-text font-display text-sm font-bold" style={{ color: g.color }}>
+                    <p className="font-display text-sm font-bold" style={{ color: g.color }}>
                       <AnimatedNumber value={g.saved} format={formatCurrency} />
                     </p>
                     <p className="text-xs text-slate-500">de {formatCurrency(g.target_amount)}</p>

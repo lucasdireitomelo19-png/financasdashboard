@@ -227,6 +227,25 @@ input[type='number'] {
     0 0 32px -8px color-mix(in srgb, var(--color-accent) 35%, transparent);
 }
 
+/* ---------------------------------------------------------------------- */
+/* Painel calmo: mesma família visual do hud-panel, mas sem os cantos tipo
+   "mira" nem o brilho pesado — pra conteúdo secundário (listas, cards de
+   apoio). O glow forte do hud-panel fica reservado só pro que é primário
+   em cada tela (ex: patrimônio líquido, saldo). */
+.panel-calm {
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: rgba(15, 23, 38, 0.55);
+  transition:
+    border-color 0.25s ease,
+    background 0.25s ease;
+}
+
+.panel-calm:hover {
+  border-color: rgba(255, 255, 255, 0.14);
+  background: rgba(15, 23, 38, 0.7);
+}
+
 /* brilho aplicado ao texto usando a cor atual (ex: text-emerald-400 + glow-text) */
 .glow-text {
   text-shadow:

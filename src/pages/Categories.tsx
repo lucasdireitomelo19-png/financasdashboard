@@ -88,7 +88,7 @@ export function Categories() {
           const spent = spentByCategory.get(c.id) ?? 0
           const pct = budget ? Math.min(100, (spent / budget.monthly_limit) * 100) : 0
           return (
-            <div key={c.id} className="hud-panel relative p-3">
+            <div key={c.id} className="panel-calm relative p-3">
               <div className="flex items-center justify-between gap-2">
                 <button
                   onClick={() => {

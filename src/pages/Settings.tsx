@@ -42,7 +42,7 @@ export function Settings() {
       <h1 className="font-display text-lg font-bold uppercase tracking-wider text-cyan-100">Configurações</h1>
       <p className="text-sm text-slate-400">Escolha o esquema de cores do app. A mesma pegada, em outra cor.</p>
 
-      <div className="hud-panel p-4">
+      <div className="panel-calm p-4">
         <h2 className="mb-3 font-display text-xs font-semibold uppercase tracking-wider text-cyan-300/70">Esquema de cores</h2>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           {THEMES.map((t) => {
@@ -75,7 +75,7 @@ export function Settings() {
         </div>
       </div>
 
-      <div className="hud-panel p-4">
+      <div className="panel-calm p-4">
         <h2 className="mb-1 font-display text-xs font-semibold uppercase tracking-wider text-cyan-300/70">📱 WhatsApp</h2>
         <p className="mb-3 text-xs text-slate-500">
           Vincule seu número pra registrar gastos e entradas mandando mensagem, tipo <span className="text-slate-400">"gastei 50 no mercado"</span> ou{' '}

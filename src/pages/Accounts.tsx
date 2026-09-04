@@ -82,7 +82,7 @@ export function Accounts() {
       <p className="text-sm text-slate-400">Cartões de crédito e vale (VR/VA), cada um com o ciclo e o saldo/fatura próprios.</p>
 
       {accounts.length === 0 ? (
-        <div className="hud-panel p-8 text-center text-sm text-slate-500">
+        <div className="panel-calm p-8 text-center text-sm text-slate-500">
           Nenhuma conta cadastrada ainda. Adicione seu cartão de crédito ou vale-refeição/alimentação pra acompanhar a fatura e o saldo.
         </div>
       ) : (
@@ -186,7 +186,7 @@ function CreditCardAccountCard({
   const paid = isPaid(account.id, previous.key)
 
   return (
-    <div className="hud-panel p-4">
+    <div className="panel-calm p-4">
       <div className="flex items-start justify-between gap-2">
         <button onClick={onToggle} className="flex-1 text-left">
           <div className="flex items-center gap-2">
@@ -210,7 +210,7 @@ function CreditCardAccountCard({
       <div className="mt-3 grid grid-cols-2 gap-3">
         <div className="rounded-lg border border-cyan-500/20 bg-[#0a1120]/60 p-3">
           <p className="font-display text-[10px] uppercase tracking-wider text-slate-500">Fatura atual</p>
-          <p className="glow-text mt-0.5 font-display text-base font-bold text-cyan-100">
+          <p className="mt-0.5 font-display text-base font-bold text-cyan-100">
             <AnimatedNumber value={currentTotal} format={formatCurrency} />
           </p>
           <p className="mt-0.5 text-[11px] text-slate-500">{daysToClose <= 0 ? 'fecha hoje' : `fecha em ${daysToClose} dia${daysToClose === 1 ? '' : 's'}`}</p>
@@ -218,7 +218,7 @@ function CreditCardAccountCard({
 
         <div className="rounded-lg border border-cyan-500/20 bg-[#0a1120]/60 p-3">
           <p className="font-display text-[10px] uppercase tracking-wider text-slate-500">Fatura anterior</p>
-          <p className="glow-text mt-0.5 font-display text-base font-bold text-slate-200">{formatCurrency(previousTotal)}</p>
+          <p className="mt-0.5 font-display text-base font-bold text-slate-200">{formatCurrency(previousTotal)}</p>
           <div className="mt-1 flex items-center justify-between gap-2">
             <p className="text-[11px] text-slate-500">vence {formatDate(dateToIso(previous.dueDate))}</p>
             {previousTotal > 0 && (
@@ -272,7 +272,7 @@ function VrAccountCard({
   const pct = monthlyCredit > 0 ? Math.min(100, Math.max(0, (spent / monthlyCredit) * 100)) : 0
 
   return (
-    <div className="hud-panel p-4">
+    <div className="panel-calm p-4">
       <div className="flex items-start justify-between gap-2">
         <button onClick={onToggle} className="flex-1 text-left">
           <div className="flex items-center gap-2">
@@ -297,7 +297,7 @@ function VrAccountCard({
         <div className="flex items-end justify-between">
           <div>
             <p className="font-display text-[10px] uppercase tracking-wider text-slate-500">Saldo disponível</p>
-            <p className={`glow-text mt-0.5 font-display text-lg font-bold ${balance >= 0 ? 'text-emerald-300' : 'text-rose-400'}`}>
+            <p className={`mt-0.5 font-display text-lg font-bold ${balance >= 0 ? 'text-emerald-300' : 'text-rose-400'}`}>
               <AnimatedNumber value={balance} format={formatCurrency} />
             </p>
           </div>

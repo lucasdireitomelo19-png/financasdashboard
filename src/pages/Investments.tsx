@@ -9,7 +9,6 @@ import { formatCurrency, formatDate } from '../lib/format'
 import { triggerSaveFeedback } from '../lib/feedback'
 import { INVESTMENT_CATEGORY_COLORS, INVESTMENT_CATEGORY_LABELS, INVESTMENT_MOVEMENT_LABELS } from '../lib/constants'
 import { AnimatedNumber } from '../components/AnimatedNumber'
-import { TiltCard } from '../components/TiltCard'
 import { Recommendations } from '../components/Recommendations'
 import { SavingsGoals } from '../components/SavingsGoals'
 import type { Investment } from '../types/database'
@@ -164,7 +163,7 @@ export function Investments() {
       </div>
 
       {allocation.length > 0 && (
-        <div className="hud-panel p-4">
+        <div className="panel-calm p-4">
           <h2 className="mb-3 font-display text-xs font-semibold uppercase tracking-wider text-cyan-300/70">Alocação da carteira</h2>
           <ResponsiveContainer width="100%" height={240}>
             <PieChart>
@@ -191,7 +190,7 @@ export function Investments() {
 
       <div className="space-y-3">
         {investments.length === 0 ? (
-          <div className="hud-panel p-8 text-center text-sm text-slate-500">
+          <div className="panel-calm p-8 text-center text-sm text-slate-500">
             Nenhum investimento cadastrado ainda. Adicione o primeiro para começar a acompanhar sua carteira.
           </div>
         ) : (
@@ -199,7 +198,7 @@ export function Investments() {
             const isOpen = expanded === inv.id
             const movements = movementsFor(inv.id)
             return (
-              <div key={inv.id} className="hud-panel p-4">
+              <div key={inv.id} className="panel-calm p-4">
                 <div className="flex items-start justify-between gap-2">
                   <button onClick={() => setExpanded(isOpen ? null : inv.id)} className="flex-1 text-left">
                     <div className="flex items-center gap-2">
@@ -212,10 +211,10 @@ export function Investments() {
                     </p>
                   </button>
                   <div className="text-right">
-                    <p className="glow-text font-display text-sm font-bold text-cyan-100">
+                    <p className="font-display text-sm font-bold text-cyan-100">
                       <AnimatedNumber value={inv.currentValue} format={formatCurrency} />
                     </p>
-                    <p className={`glow-text text-xs ${inv.gain >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                    <p className={`text-xs ${inv.gain >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
                       {inv.gain >= 0 ? '+' : ''}
                       {formatCurrency(inv.gain)} ({inv.gainPct >= 0 ? '+' : ''}
                       {inv.gainPct.toFixed(1)}%)
@@ -284,14 +283,12 @@ export function Investments() {
 
 function MiniStat({ label, value, color, suffix }: { label: string; value: number; color: string; suffix?: string }) {
   return (
-    <TiltCard>
-      <div className="hud-panel h-full p-3 text-center">
-        <p className="font-display text-[10px] uppercase tracking-wider text-slate-500">{label}</p>
-        <p className={`glow-text mt-0.5 font-display text-sm font-bold ${color}`}>
-          <AnimatedNumber value={value} format={formatCurrency} />
-          {suffix}
-        </p>
-      </div>
-    </TiltCard>
+    <div className="panel-calm h-full p-3 text-center">
+      <p className="font-display text-[10px] uppercase tracking-wider text-slate-500">{label}</p>
+      <p className={`mt-0.5 font-display text-sm font-bold ${color}`}>
+        <AnimatedNumber value={value} format={formatCurrency} />
+        {suffix}
+      </p>
+    </div>
   )
 }

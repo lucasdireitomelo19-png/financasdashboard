@@ -35,7 +35,7 @@ export function QuickAddAgenda({ onCreate }: QuickAddAgendaProps) {
   }
 
   return (
-    <div className="hud-panel p-4">
+    <div className="panel-calm p-4">
       <p className="mb-2 font-display text-[10px] uppercase tracking-wider text-slate-500">📅 Agenda rápida</p>
       <form onSubmit={handleSubmit} className="flex flex-col gap-2 sm:flex-row">
         <TextInput

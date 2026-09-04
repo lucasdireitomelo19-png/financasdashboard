@@ -12,7 +12,6 @@ import { PAYMENT_METHOD_LABELS } from '../lib/constants'
 import { buildInstallmentRows } from '../lib/installments'
 import { triggerSaveFeedback } from '../lib/feedback'
 import { AnimatedNumber } from '../components/AnimatedNumber'
-import { TiltCard } from '../components/TiltCard'
 import type { Transaction, TransactionType } from '../types/database'
 
 const defaultRange = currentMonthRange()
@@ -162,7 +161,7 @@ export function Transactions() {
         <MiniStat label="Saldo" value={totals.balance} color={totals.balance >= 0 ? 'text-emerald-400' : 'text-rose-400'} />
       </div>
 
-      <div className="hud-panel p-4">
+      <div className="panel-calm p-4">
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
           <Select value={filters.type} onChange={(e) => setFilters((f) => ({ ...f, type: e.target.value as TransactionFilters['type'] }))}>
             <option value="all">Todos os tipos</option>
@@ -218,7 +217,7 @@ export function Transactions() {
         </div>
       </div>
 
-      <div className="hud-panel p-4">
+      <div className="panel-calm p-4">
         {loading ? (
           <p className="py-8 text-center text-sm text-slate-500">Carregando...</p>
         ) : grouped.length === 0 ? (
@@ -260,7 +259,7 @@ export function Transactions() {
                           </div>
                         </button>
                         <div className="flex items-center gap-2">
-                          <span className={`glow-text text-sm font-semibold ${t.type === 'income' ? 'text-emerald-400' : 'text-rose-400'}`}>
+                          <span className={`text-sm font-semibold ${t.type === 'income' ? 'text-emerald-400' : 'text-rose-400'}`}>
                             {t.type === 'income' ? '+' : '-'} {formatCurrency(Number(t.amount))}
                           </span>
                           <button onClick={() => handleDelete(t)} className="rounded p-1 text-slate-500 hover:text-rose-400" aria-label="Excluir">
@@ -295,13 +294,11 @@ export function Transactions() {
 
 function MiniStat({ label, value, color }: { label: string; value: number; color: string }) {
   return (
-    <TiltCard>
-      <div className="hud-panel h-full p-3 text-center">
-        <p className="font-display text-[10px] uppercase tracking-wider text-slate-500">{label}</p>
-        <p className={`glow-text mt-0.5 font-display text-sm font-bold ${color}`}>
-          <AnimatedNumber value={value} format={formatCurrency} />
-        </p>
-      </div>
-    </TiltCard>
+    <div className="panel-calm h-full p-3 text-center">
+      <p className="font-display text-[10px] uppercase tracking-wider text-slate-500">{label}</p>
+      <p className={`mt-0.5 font-display text-sm font-bold ${color}`}>
+        <AnimatedNumber value={value} format={formatCurrency} />
+      </p>
+    </div>
   )
 }

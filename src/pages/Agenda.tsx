@@ -105,7 +105,7 @@ export function Agenda() {
         </button>
       </div>
 
-      <div className="hud-panel p-4">
+      <div className="panel-calm p-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="font-display text-[10px] uppercase tracking-wider text-slate-500">📆 Google Agenda</p>
@@ -188,7 +188,7 @@ export function Agenda() {
         })}
       </div>
 
-      <div className="hud-panel p-4">
+      <div className="panel-calm p-4">
         {loading ? (
           <p className="py-8 text-center text-sm text-slate-500">Carregando...</p>
         ) : grouped.length === 0 ? (

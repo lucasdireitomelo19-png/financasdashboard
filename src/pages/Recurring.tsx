@@ -9,7 +9,6 @@ import { formatCurrency, formatDate, todayIso } from '../lib/format'
 import { nextOccurrenceAfter } from '../lib/recurrence'
 import { triggerSaveFeedback } from '../lib/feedback'
 import { AnimatedNumber } from '../components/AnimatedNumber'
-import { TiltCard } from '../components/TiltCard'
 import type { RecurringTemplate } from '../types/database'
 
 const FREQ_LABELS: Record<string, string> = { weekly: 'Semanal', monthly: 'Mensal', yearly: 'Anual' }
@@ -92,30 +91,24 @@ export function Recurring() {
       </p>
 
       <div className="grid grid-cols-3 gap-3">
-        <TiltCard>
-          <div className="hud-panel h-full p-3 text-center">
-            <p className="font-display text-[10px] uppercase tracking-wider text-slate-500">Entradas fixas / mês (aprox.)</p>
-            <p className="glow-text mt-0.5 font-display text-sm font-bold text-emerald-400">
-              <AnimatedNumber value={monthlyIncomeTotal} format={formatCurrency} />
-            </p>
-          </div>
-        </TiltCard>
-        <TiltCard>
-          <div className="hud-panel h-full p-3 text-center">
-            <p className="font-display text-[10px] uppercase tracking-wider text-slate-500">Gastos fixos / mês (aprox.)</p>
-            <p className="glow-text mt-0.5 font-display text-sm font-bold text-rose-400">
-              <AnimatedNumber value={monthlyExpenseTotal} format={formatCurrency} />
-            </p>
-          </div>
-        </TiltCard>
-        <TiltCard>
-          <div className="hud-panel h-full p-3 text-center">
-            <p className="font-display text-[10px] uppercase tracking-wider text-slate-500">Empresa / mês (aprox.)</p>
-            <p className="glow-text mt-0.5 font-display text-sm font-bold text-amber-400">
-              <AnimatedNumber value={monthlyCompanyTotal} format={formatCurrency} />
-            </p>
-          </div>
-        </TiltCard>
+        <div className="panel-calm h-full p-3 text-center">
+          <p className="font-display text-[10px] uppercase tracking-wider text-slate-500">Entradas fixas / mês (aprox.)</p>
+          <p className="mt-0.5 font-display text-sm font-bold text-emerald-400">
+            <AnimatedNumber value={monthlyIncomeTotal} format={formatCurrency} />
+          </p>
+        </div>
+        <div className="panel-calm h-full p-3 text-center">
+          <p className="font-display text-[10px] uppercase tracking-wider text-slate-500">Gastos fixos / mês (aprox.)</p>
+          <p className="mt-0.5 font-display text-sm font-bold text-rose-400">
+            <AnimatedNumber value={monthlyExpenseTotal} format={formatCurrency} />
+          </p>
+        </div>
+        <div className="panel-calm h-full p-3 text-center">
+          <p className="font-display text-[10px] uppercase tracking-wider text-slate-500">Empresa / mês (aprox.)</p>
+          <p className="mt-0.5 font-display text-sm font-bold text-amber-400">
+            <AnimatedNumber value={monthlyCompanyTotal} format={formatCurrency} />
+          </p>
+        </div>
       </div>
 
       <TemplateSection title="Entradas recorrentes" items={fixedIncomes} categoryMap={categoryMap} today={today} onEdit={openEdit} onDelete={handleDelete} onToggle={toggleActive} />
@@ -149,7 +142,7 @@ function TemplateSection({
   onToggle: (t: RecurringTemplate) => void
 }) {
   return (
-    <div className="hud-panel p-4">
+    <div className="panel-calm p-4">
       <h2 className="mb-3 font-display text-xs font-semibold uppercase tracking-wider text-cyan-300/70">{title}</h2>
       {items.length === 0 ? (
         <p className="py-4 text-center text-sm text-slate-500">Nenhuma recorrência cadastrada.</p>
@@ -170,7 +163,7 @@ function TemplateSection({
                   </div>
                 </button>
                 <div className="flex items-center gap-2">
-                  <span className={`glow-text text-sm font-semibold ${t.type === 'income' ? 'text-emerald-400' : 'text-rose-400'}`}>{formatCurrency(Number(t.amount))}</span>
+                  <span className={`text-sm font-semibold ${t.type === 'income' ? 'text-emerald-400' : 'text-rose-400'}`}>{formatCurrency(Number(t.amount))}</span>
                   <button
                     onClick={() => onToggle(t)}
                     className={`rounded p-1 text-xs ${t.active ? 'text-emerald-400' : 'text-slate-500'}`}

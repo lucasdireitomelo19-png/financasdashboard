@@ -34,7 +34,7 @@ export function Profile() {
       <h1 className="font-display text-lg font-bold uppercase tracking-wider text-cyan-100">Meu perfil</h1>
       <p className="text-sm text-slate-400">Dê um nome à sua conta — ele aparece na saudação da tela inicial.</p>
 
-      <div className="hud-panel p-4">
+      <div className="panel-calm p-4">
         <form onSubmit={handleSubmit}>
           <ErrorText>{error}</ErrorText>
           {success && (

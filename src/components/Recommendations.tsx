@@ -86,13 +86,13 @@ export function Recommendations({ userId, investments }: { userId: string | unde
         decisões específicas, consulte um profissional certificado.
       </p>
 
-      <div className="hud-panel p-4">
+      <div className="panel-calm p-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h2 className="font-display text-xs font-semibold uppercase tracking-wider text-cyan-300/70">Seu perfil de investidor</h2>
             {profile ? (
               <>
-                <p className="glow-text mt-1 font-display text-lg font-bold text-cyan-100">{RISK_PROFILE_LABELS[profile.risk_profile]}</p>
+                <p className="mt-1 font-display text-lg font-bold text-cyan-100">{RISK_PROFILE_LABELS[profile.risk_profile]}</p>
                 <p className="mt-1 max-w-md text-sm text-slate-400">{RISK_PROFILE_DESCRIPTIONS[profile.risk_profile]}</p>
               </>
             ) : (
@@ -109,7 +109,7 @@ export function Recommendations({ userId, investments }: { userId: string | unde
       </div>
 
       {profile && (
-        <div className="hud-panel p-4">
+        <div className="panel-calm p-4">
           <h2 className="mb-3 font-display text-xs font-semibold uppercase tracking-wider text-cyan-300/70">Alocação atual x sugerida</h2>
           <ResponsiveContainer width="100%" height={320}>
             <RadarChart data={radarData} outerRadius="72%">
@@ -133,7 +133,7 @@ export function Recommendations({ userId, investments }: { userId: string | unde
         </div>
       )}
 
-      <div className="hud-panel p-4">
+      <div className="panel-calm p-4">
         <h2 className="mb-3 font-display text-xs font-semibold uppercase tracking-wider text-cyan-300/70">Diagnóstico financeiro</h2>
         <div className="space-y-2">
           {findings.map((f) => {

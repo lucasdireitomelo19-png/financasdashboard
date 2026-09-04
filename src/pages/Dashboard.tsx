@@ -170,7 +170,7 @@ export function Dashboard() {
   const recent = [...currentMonthTx].sort((a, b) => (a.date < b.date ? 1 : -1)).slice(0, 6)
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-7">
       <div>
         <h1 className="font-display text-lg font-bold uppercase tracking-wider text-cyan-100">
           Olá{displayName ? `, ${displayName}` : ''} 👋
@@ -216,14 +216,12 @@ export function Dashboard() {
 
       {monthlyCompanyExpenses > 0 && (
         <Link to="/recorrentes">
-          <TiltCard>
-            <div className="hud-panel flex items-center justify-between p-3">
-              <p className="font-display text-[10px] uppercase tracking-wider text-slate-500">🏢 Gastos da empresa / mês (aprox.)</p>
-              <p className="glow-text font-display text-sm font-bold text-amber-400">
-                <AnimatedNumber value={monthlyCompanyExpenses} format={formatCurrency} />
-              </p>
-            </div>
-          </TiltCard>
+          <div className="panel-calm flex items-center justify-between p-4">
+            <p className="font-display text-[10px] uppercase tracking-wider text-slate-500">🏢 Gastos da empresa / mês (aprox.)</p>
+            <p className="font-display text-sm font-bold text-amber-400">
+              <AnimatedNumber value={monthlyCompanyExpenses} format={formatCurrency} />
+            </p>
+          </div>
         </Link>
       )}
 
@@ -237,17 +235,15 @@ export function Dashboard() {
           </div>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             {accountBalances.map(({ account: a, value, label }) => (
-              <TiltCard key={a.id}>
-                <div className="hud-panel h-full p-3 text-center">
-                  <p className="flex items-center justify-center gap-1.5 font-display text-[10px] uppercase tracking-wider text-slate-500">
-                    <span className="text-sm">{a.icon}</span> {a.name}
-                  </p>
-                  <p className="glow-text mt-1 font-display text-base font-bold" style={{ color: a.color }}>
-                    <AnimatedNumber value={value} format={formatCurrency} />
-                  </p>
-                  <p className="mt-0.5 text-[10px] text-slate-500">{label}</p>
-                </div>
-              </TiltCard>
+              <div key={a.id} className="panel-calm h-full p-4 text-center">
+                <p className="flex items-center justify-center gap-1.5 font-display text-[10px] uppercase tracking-wider text-slate-500">
+                  <span className="text-sm">{a.icon}</span> {a.name}
+                </p>
+                <p className="mt-1 font-display text-base font-bold" style={{ color: a.color }}>
+                  <AnimatedNumber value={value} format={formatCurrency} />
+                </p>
+                <p className="mt-0.5 text-[10px] text-slate-500">{label}</p>
+              </div>
             ))}
           </div>
         </div>
@@ -256,7 +252,7 @@ export function Dashboard() {
       <QuickAddAgenda onCreate={createAgendaEvent} />
 
       {upcomingEvents.length > 0 && (
-        <div className="hud-panel p-4">
+        <div className="panel-calm p-4">
           <div className="mb-3 flex items-center justify-between">
             <h2 className="font-display text-xs font-semibold uppercase tracking-wider text-cyan-300/70">Próximos compromissos</h2>
             <Link to="/agenda" className="font-display text-[11px] uppercase tracking-wide text-cyan-400 hover:underline">
@@ -285,7 +281,7 @@ export function Dashboard() {
       )}
 
       {insights.length > 0 && (
-        <div className="hud-panel p-4">
+        <div className="panel-calm p-4">
           <h2 className="mb-3 font-display text-xs font-semibold uppercase tracking-wider text-cyan-300/70">Insights do mês</h2>
           <div className="space-y-2">
             {insights.map((ins) => {
@@ -307,7 +303,7 @@ export function Dashboard() {
       )}
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <div className="hud-panel p-4">
+        <div className="panel-calm p-4">
           <h2 className="mb-3 font-display text-xs font-semibold uppercase tracking-wider text-cyan-300/70">Gastos por categoria (mês atual)</h2>
           {expenseByCategory.length === 0 ? (
             <EmptyChart text="Nenhum gasto registrado neste mês ainda." />
@@ -326,7 +322,7 @@ export function Dashboard() {
           )}
         </div>
 
-        <div className="hud-panel p-4">
+        <div className="panel-calm p-4">
           <h2 className="mb-3 font-display text-xs font-semibold uppercase tracking-wider text-cyan-300/70">Entradas x Saídas (últimos 6 meses)</h2>
           <ResponsiveContainer width="100%" height={260}>
             <BarChart data={evolution}>
@@ -342,7 +338,7 @@ export function Dashboard() {
         </div>
       </div>
 
-      <div className="hud-panel p-4">
+      <div className="panel-calm p-4">
         <div className="mb-3 flex items-center justify-between">
           <h2 className="font-display text-xs font-semibold uppercase tracking-wider text-cyan-300/70">Últimos lançamentos</h2>
           <Link to="/lancamentos" className="font-display text-[11px] uppercase tracking-wide text-cyan-400 hover:underline">
@@ -366,7 +362,7 @@ export function Dashboard() {
                       </p>
                     </div>
                   </div>
-                  <span className={`glow-text text-sm font-semibold ${t.type === 'income' ? 'text-emerald-400' : 'text-rose-400'}`}>
+                  <span className={`text-sm font-semibold ${t.type === 'income' ? 'text-emerald-400' : 'text-rose-400'}`}>
                     {t.type === 'income' ? '+' : '-'} {formatCurrency(Number(t.amount))}
                   </span>
                 </li>
@@ -381,15 +377,13 @@ export function Dashboard() {
 
 function StatCard({ label, value, color, loading, hint }: { label: string; value: number; color: string; loading: boolean; hint?: string }) {
   return (
-    <TiltCard>
-      <div className="hud-panel h-full p-4">
-        <p className="font-display text-[10px] uppercase tracking-wider text-slate-500">{label}</p>
-        <p className={`glow-text mt-1 font-display text-lg font-bold ${color}`}>
-          {loading ? '···' : <AnimatedNumber value={value} format={formatCurrency} />}
-        </p>
-        {hint && <p className="mt-1 text-[10px] text-slate-500">{hint}</p>}
-      </div>
-    </TiltCard>
+    <div className="panel-calm h-full p-4">
+      <p className="font-display text-[10px] uppercase tracking-wider text-slate-500">{label}</p>
+      <p className={`mt-1 font-display text-lg font-bold ${color}`}>
+        {loading ? '···' : <AnimatedNumber value={value} format={formatCurrency} />}
+      </p>
+      {hint && <p className="mt-1 text-[10px] text-slate-500">{hint}</p>}
+    </div>
   )
 }
 
