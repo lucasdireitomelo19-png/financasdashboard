@@ -106,6 +106,10 @@ create table if not exists public.recurring_templates (
 
 alter table public.recurring_templates add column if not exists account_id uuid references public.payment_accounts(id) on delete set null;
 
+-- marca gastos/entradas fixas que são da empresa (não pessoais), pra
+-- mostrar numa seção separada em Recorrentes
+alter table public.recurring_templates add column if not exists is_company boolean not null default false;
+
 alter table public.recurring_templates enable row level security;
 
 drop policy if exists "recurring_select_own" on public.recurring_templates;

@@ -26,15 +26,15 @@ export function Recurring() {
   const categoryMap = useMemo(() => new Map(categories.map((c) => [c.id, c])), [categories])
   const today = todayIso()
 
-  const fixedExpenses = templates.filter((t) => t.type === 'expense')
+  const fixedExpenses = templates.filter((t) => t.type === 'expense' && !t.is_company)
+  const companyExpenses = templates.filter((t) => t.type === 'expense' && t.is_company)
   const fixedIncomes = templates.filter((t) => t.type === 'income')
 
-  const monthlyExpenseTotal = fixedExpenses
-    .filter((t) => t.active)
-    .reduce((s, t) => s + Number(t.amount) * (t.frequency === 'monthly' ? 1 : t.frequency === 'weekly' ? 4.33 : 1 / 12), 0)
-  const monthlyIncomeTotal = fixedIncomes
-    .filter((t) => t.active)
-    .reduce((s, t) => s + Number(t.amount) * (t.frequency === 'monthly' ? 1 : t.frequency === 'weekly' ? 4.33 : 1 / 12), 0)
+  const monthlyAmount = (t: RecurringTemplate) => Number(t.amount) * (t.frequency === 'monthly' ? 1 : t.frequency === 'weekly' ? 4.33 : 1 / 12)
+
+  const monthlyExpenseTotal = fixedExpenses.filter((t) => t.active).reduce((s, t) => s + monthlyAmount(t), 0)
+  const monthlyIncomeTotal = fixedIncomes.filter((t) => t.active).reduce((s, t) => s + monthlyAmount(t), 0)
+  const monthlyCompanyTotal = companyExpenses.filter((t) => t.active).reduce((s, t) => s + monthlyAmount(t), 0)
 
   const openCreate = () => {
     setEditing(null)
@@ -60,6 +60,7 @@ export function Recurring() {
       payment_method: values.payment_method || null,
       account_id: values.account_id || null,
       active: values.active,
+      is_company: values.is_company,
     }
     const result = editing ? await update(editing.id, payload) : await create(payload)
     if (!result.error) {
@@ -90,7 +91,7 @@ export function Recurring() {
         Gastos e entradas de valor fixo (aluguel, salário, assinaturas). O app lança automaticamente na data certa.
       </p>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-3 gap-3">
         <TiltCard>
           <div className="hud-panel h-full p-3 text-center">
             <p className="font-display text-[10px] uppercase tracking-wider text-slate-500">Entradas fixas / mês (aprox.)</p>
@@ -107,10 +108,19 @@ export function Recurring() {
             </p>
           </div>
         </TiltCard>
+        <TiltCard>
+          <div className="hud-panel h-full p-3 text-center">
+            <p className="font-display text-[10px] uppercase tracking-wider text-slate-500">Empresa / mês (aprox.)</p>
+            <p className="glow-text mt-0.5 font-display text-sm font-bold text-amber-400">
+              <AnimatedNumber value={monthlyCompanyTotal} format={formatCurrency} />
+            </p>
+          </div>
+        </TiltCard>
       </div>
 
       <TemplateSection title="Entradas recorrentes" items={fixedIncomes} categoryMap={categoryMap} today={today} onEdit={openEdit} onDelete={handleDelete} onToggle={toggleActive} />
       <TemplateSection title="Gastos recorrentes" items={fixedExpenses} categoryMap={categoryMap} today={today} onEdit={openEdit} onDelete={handleDelete} onToggle={toggleActive} />
+      <TemplateSection title="🏢 Gastos da empresa" items={companyExpenses} categoryMap={categoryMap} today={today} onEdit={openEdit} onDelete={handleDelete} onToggle={toggleActive} />
 
       {modalOpen && (
         <Modal title={editing ? 'Editar recorrência' : 'Nova recorrência'} onClose={() => setModalOpen(false)}>

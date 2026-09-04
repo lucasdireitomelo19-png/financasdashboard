@@ -41,6 +41,7 @@ export interface RecurringTemplate {
   active: boolean
   payment_method: PaymentMethod | null
   account_id: string | null
+  is_company: boolean
   last_generated_date: string | null
   created_at: string
 }
