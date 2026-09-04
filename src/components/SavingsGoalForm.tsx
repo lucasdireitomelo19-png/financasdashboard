@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ErrorText, FormField, PrimaryButton, TextInput } from './FormField'
+import { ErrorText, FormField, PrimaryButton, Select, TextInput } from './FormField'
 import type { SavingsGoal } from '../types/database'
 
 const ICON_OPTIONS = ['🎯', '✈️', '🏠', '🚗', '💍', '🎓', '🏝️', '💻', '🛡️', '🎁']
@@ -11,19 +11,29 @@ export interface SavingsGoalFormValues {
   target_date: string
   icon: string
   color: string
+  linked_investment_id: string
 }
 
 function toValues(g?: SavingsGoal | null): SavingsGoalFormValues {
-  if (!g) return { name: '', target_amount: '', target_date: '', icon: ICON_OPTIONS[0], color: COLOR_OPTIONS[0] }
-  return { name: g.name, target_amount: String(g.target_amount), target_date: g.target_date ?? '', icon: g.icon, color: g.color }
+  if (!g) return { name: '', target_amount: '', target_date: '', icon: ICON_OPTIONS[0], color: COLOR_OPTIONS[0], linked_investment_id: '' }
+  return {
+    name: g.name,
+    target_amount: String(g.target_amount),
+    target_date: g.target_date ?? '',
+    icon: g.icon,
+    color: g.color,
+    linked_investment_id: g.linked_investment_id ?? '',
+  }
 }
 
 export function SavingsGoalForm({
   initial,
+  investments,
   onCancel,
   onSubmit,
 }: {
   initial?: SavingsGoal | null
+  investments: { id: string; name: string }[]
   onCancel: () => void
   onSubmit: (values: SavingsGoalFormValues) => Promise<{ error: string | null }>
 }) {
@@ -73,6 +83,22 @@ export function SavingsGoalForm({
           <TextInput type="date" value={values.target_date} onChange={(e) => setValues((v) => ({ ...v, target_date: e.target.value }))} />
         </FormField>
       </div>
+
+      {investments.length > 0 && (
+        <FormField label="Vincular a um investimento (opcional)">
+          <Select value={values.linked_investment_id} onChange={(e) => setValues((v) => ({ ...v, linked_investment_id: e.target.value }))}>
+            <option value="">Não vincular — registrar aportes manualmente</option>
+            {investments.map((inv) => (
+              <option key={inv.id} value={inv.id}>
+                {inv.name}
+              </option>
+            ))}
+          </Select>
+          {values.linked_investment_id && (
+            <p className="mt-1 text-xs text-slate-500">O valor guardado dessa meta passa a acompanhar automaticamente o valor atual desse investimento.</p>
+          )}
+        </FormField>
+      )}
 
       <FormField label="Ícone">
         <div className="flex flex-wrap gap-2">

@@ -360,6 +360,12 @@ create table if not exists public.savings_goals (
   created_at timestamptz not null default now()
 );
 
+-- vincula opcionalmente a meta a um investimento da carteira: quando
+-- vinculada, o valor guardado da meta acompanha automaticamente o valor
+-- atual desse investimento (aportes lá já contam pra meta, sem precisar
+-- registrar duas vezes)
+alter table public.savings_goals add column if not exists linked_investment_id uuid references public.investments(id) on delete set null;
+
 alter table public.savings_goals enable row level security;
 
 drop policy if exists "savings_goals_select_own" on public.savings_goals;

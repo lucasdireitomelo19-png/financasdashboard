@@ -138,6 +138,7 @@ export interface SavingsGoal {
   color: string
   icon: string
   archived: boolean
+  linked_investment_id: string | null
   created_at: string
 }
 

@@ -7,7 +7,7 @@ export interface SavingsGoalWithTotal extends SavingsGoal {
   pct: number
 }
 
-export function useSavingsGoals(userId: string | undefined) {
+export function useSavingsGoals(userId: string | undefined, investmentValueById: Map<string, number> = new Map()) {
   const [goals, setGoals] = useState<SavingsGoal[]>([])
   const [contributions, setContributions] = useState<SavingsGoalContribution[]>([])
   const [loading, setLoading] = useState(true)
@@ -31,10 +31,15 @@ export function useSavingsGoals(userId: string | undefined) {
   const goalsWithTotals: SavingsGoalWithTotal[] = useMemo(
     () =>
       goals.map((g) => {
-        const saved = contributions.filter((c) => c.goal_id === g.id).reduce((s, c) => s + Number(c.amount), 0)
+        // meta vinculada a um investimento: o valor guardado acompanha o
+        // valor atual desse investimento direto, sem precisar registrar
+        // aporte duas vezes (uma na carteira, outra na meta)
+        const saved = g.linked_investment_id
+          ? (investmentValueById.get(g.linked_investment_id) ?? 0)
+          : contributions.filter((c) => c.goal_id === g.id).reduce((s, c) => s + Number(c.amount), 0)
         return { ...g, saved, pct: g.target_amount > 0 ? Math.min(100, (saved / g.target_amount) * 100) : 0 }
       }),
-    [goals, contributions],
+    [goals, contributions, investmentValueById],
   )
 
   const create = async (input: Omit<SavingsGoal, 'id' | 'created_at' | 'user_id'>) => {

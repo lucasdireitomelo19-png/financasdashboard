@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useSavingsGoals, type SavingsGoalWithTotal } from '../hooks/useSavingsGoals'
+import type { InvestmentWithTotals } from '../hooks/useInvestments'
 import { Modal } from './Modal'
 import { SavingsGoalForm, type SavingsGoalFormValues } from './SavingsGoalForm'
 import { GoalContributionForm, type ContributionFormValues } from './GoalContributionForm'
@@ -8,8 +9,10 @@ import { formatCurrency, formatDate } from '../lib/format'
 import { triggerSaveFeedback } from '../lib/feedback'
 import type { SavingsGoal } from '../types/database'
 
-export function SavingsGoals({ userId }: { userId: string | undefined }) {
-  const { goals, create, update, remove, addContribution, removeContribution, contributionsFor } = useSavingsGoals(userId)
+export function SavingsGoals({ userId, investments }: { userId: string | undefined; investments: InvestmentWithTotals[] }) {
+  const investmentValueById = useMemo(() => new Map(investments.map((i) => [i.id, i.currentValue])), [investments])
+  const investmentNameById = useMemo(() => new Map(investments.map((i) => [i.id, i.name])), [investments])
+  const { goals, create, update, remove, addContribution, removeContribution, contributionsFor } = useSavingsGoals(userId, investmentValueById)
   const [formOpen, setFormOpen] = useState(false)
   const [editing, setEditing] = useState<SavingsGoal | null>(null)
   const [contribTarget, setContribTarget] = useState<SavingsGoalWithTotal | null>(null)
@@ -28,6 +31,7 @@ export function SavingsGoals({ userId }: { userId: string | undefined }) {
       icon: values.icon,
       color: values.color,
       archived: false,
+      linked_investment_id: values.linked_investment_id || null,
     }
     const result = editing ? await update(editing.id, payload) : await create(payload)
     if (!result.error) {
@@ -82,6 +86,9 @@ export function SavingsGoals({ userId }: { userId: string | undefined }) {
                       <p className="text-sm font-semibold text-slate-100">{g.name}</p>
                     </div>
                     {g.target_date && <p className="mt-0.5 text-xs text-slate-500">até {formatDate(g.target_date)}</p>}
+                    {g.linked_investment_id && (
+                      <p className="mt-0.5 text-xs text-cyan-400/80">🔗 vinculada a {investmentNameById.get(g.linked_investment_id) ?? 'investimento'}</p>
+                    )}
                   </button>
                   <div className="text-right">
                     <p className="glow-text font-display text-sm font-bold" style={{ color: g.color }}>
@@ -101,9 +108,11 @@ export function SavingsGoals({ userId }: { userId: string | undefined }) {
                 </div>
 
                 <div className="mt-3 flex flex-wrap gap-2">
-                  <button onClick={() => setContribTarget(g)} className="rounded-lg border border-cyan-500/20 px-3 py-1.5 text-xs font-medium text-slate-300 hover:bg-cyan-500/10">
-                    + Movimentação
-                  </button>
+                  {!g.linked_investment_id && (
+                    <button onClick={() => setContribTarget(g)} className="rounded-lg border border-cyan-500/20 px-3 py-1.5 text-xs font-medium text-slate-300 hover:bg-cyan-500/10">
+                      + Movimentação
+                    </button>
+                  )}
                   <button
                     onClick={() => {
                       setEditing(g)
@@ -116,12 +125,14 @@ export function SavingsGoals({ userId }: { userId: string | undefined }) {
                   <button onClick={() => handleDelete(g)} className="rounded-lg border border-cyan-500/20 px-3 py-1.5 text-xs font-medium text-rose-400 hover:bg-rose-500/10">
                     Excluir
                   </button>
-                  <button onClick={() => setExpanded(isOpen ? null : g.id)} className="ml-auto text-xs text-slate-500 hover:text-cyan-300">
-                    {isOpen ? 'Ocultar histórico ▲' : `Histórico (${contributions.length}) ▼`}
-                  </button>
+                  {!g.linked_investment_id && (
+                    <button onClick={() => setExpanded(isOpen ? null : g.id)} className="ml-auto text-xs text-slate-500 hover:text-cyan-300">
+                      {isOpen ? 'Ocultar histórico ▲' : `Histórico (${contributions.length}) ▼`}
+                    </button>
+                  )}
                 </div>
 
-                {isOpen && (
+                {isOpen && !g.linked_investment_id && (
                   <ul className="mt-3 space-y-1.5 border-t border-cyan-500/15 pt-3">
                     {contributions.length === 0 ? (
                       <p className="text-xs text-slate-500">Nenhuma movimentação registrada.</p>
@@ -151,7 +162,7 @@ export function SavingsGoals({ userId }: { userId: string | undefined }) {
 
       {formOpen && (
         <Modal title={editing ? 'Editar meta' : 'Nova meta'} onClose={() => setFormOpen(false)}>
-          <SavingsGoalForm initial={editing} onCancel={() => setFormOpen(false)} onSubmit={handleSubmit} />
+          <SavingsGoalForm initial={editing} investments={investments} onCancel={() => setFormOpen(false)} onSubmit={handleSubmit} />
         </Modal>
       )}
 

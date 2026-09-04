@@ -148,7 +148,7 @@ export function Investments() {
       </div>
 
       {tab === 'recomendacoes' && <Recommendations userId={user?.id} investments={investments} />}
-      {tab === 'metas' && <SavingsGoals userId={user?.id} />}
+      {tab === 'metas' && <SavingsGoals userId={user?.id} investments={investments} />}
 
       {tab === 'carteira' && (
         <>
