@@ -170,6 +170,21 @@ export function Dashboard() {
 
   const recent = [...currentMonthTx].sort((a, b) => (a.date < b.date ? 1 : -1)).slice(0, 6)
 
+  // fundo do card de patrimônio: histórico real (saldo acumulado mês a mês,
+  // a partir do fluxo de caixa de verdade) emendado com a projeção futura —
+  // sem isso a linha era só a projeção, que é sempre reta (nunca "ondulada")
+  const heroSeries = useMemo(() => {
+    const monthsNet = evolution.map((m) => m.entradas - m.saidas)
+    const totalNet = monthsNet.reduce((s, v) => s + v, 0)
+    let running = netWorth - totalNet
+    const historical = evolution.map((m, i) => {
+      running += monthsNet[i]
+      return { label: m.label, valor: running }
+    })
+    return [...historical, ...projection.slice(1)]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [evolution, netWorth, projection])
+
   const entradasSeries = useMemo(() => evolution.map((m) => m.entradas), [evolution])
   const saidasSeries = useMemo(() => evolution.map((m) => m.saidas), [evolution])
   const saldoSeries = useMemo(() => evolution.map((m) => m.entradas - m.saidas), [evolution])
@@ -187,13 +202,20 @@ export function Dashboard() {
         <div className="hud-panel relative overflow-hidden p-0" style={{ height: 260 }}>
           <div className="absolute inset-0">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={projection} margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
+              <AreaChart data={heroSeries} margin={{ top: 24, right: 0, bottom: 0, left: 0 }}>
                 <defs>
                   <linearGradient id="heroFill" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stopColor="#22e0ff" stopOpacity={0.55} />
                     <stop offset="100%" stopColor="#22e0ff" stopOpacity={0} />
                   </linearGradient>
                 </defs>
+                <YAxis
+                  hide
+                  domain={([dataMin, dataMax]: readonly [number, number]) => {
+                    const pad = (dataMax - dataMin) * 0.25 || Math.max(Math.abs(dataMax) * 0.1, 50)
+                    return [dataMin - pad, dataMax + pad]
+                  }}
+                />
                 <Area type="monotone" dataKey="valor" stroke="#22e0ff" strokeWidth={3} fill="url(#heroFill)" dot={false} isAnimationActive={false} />
               </AreaChart>
             </ResponsiveContainer>

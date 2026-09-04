@@ -35,7 +35,7 @@ export function TiltCard({ children, className = '' }: { children: ReactNode; cl
       onPointerMove={handleMove}
       onPointerLeave={reset}
       className={`will-change-transform ${className}`}
-      style={{ rotateX, rotateY, transformStyle: 'preserve-3d', transformPerspective: 800 }}
+      style={{ rotateX, rotateY, transformPerspective: 800 }}
     >
       {children}
     </motion.div>
