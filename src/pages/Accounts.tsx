@@ -10,6 +10,7 @@ import { currentCreditCardCycle, previousCreditCardCycles, currentVrCycle, cycle
 import { formatCurrency, formatDate, monthsAgoRange } from '../lib/format'
 import { triggerSaveFeedback } from '../lib/feedback'
 import { AnimatedNumber } from '../components/AnimatedNumber'
+import { Reveal } from '../components/Reveal'
 import type { PaymentAccount, Transaction } from '../types/database'
 
 export function Accounts() {
@@ -87,32 +88,32 @@ export function Accounts() {
         </div>
       ) : (
         <div className="space-y-3">
-          {accounts.map((acc) =>
-            acc.type === 'cartao_credito' ? (
-              <CreditCardAccountCard
-                key={acc.id}
-                account={acc}
-                transactions={transactions}
-                isPaid={isPaid}
-                markPaid={markPaid}
-                markUnpaid={markUnpaid}
-                expanded={expanded === acc.id}
-                onToggle={() => setExpanded(expanded === acc.id ? null : acc.id)}
-                onEdit={() => openEdit(acc)}
-                onDelete={() => handleDelete(acc)}
-              />
-            ) : (
-              <VrAccountCard
-                key={acc.id}
-                account={acc}
-                transactions={transactions}
-                expanded={expanded === acc.id}
-                onToggle={() => setExpanded(expanded === acc.id ? null : acc.id)}
-                onEdit={() => openEdit(acc)}
-                onDelete={() => handleDelete(acc)}
-              />
-            ),
-          )}
+          {accounts.map((acc, i) => (
+            <Reveal key={acc.id} index={i}>
+              {acc.type === 'cartao_credito' ? (
+                <CreditCardAccountCard
+                  account={acc}
+                  transactions={transactions}
+                  isPaid={isPaid}
+                  markPaid={markPaid}
+                  markUnpaid={markUnpaid}
+                  expanded={expanded === acc.id}
+                  onToggle={() => setExpanded(expanded === acc.id ? null : acc.id)}
+                  onEdit={() => openEdit(acc)}
+                  onDelete={() => handleDelete(acc)}
+                />
+              ) : (
+                <VrAccountCard
+                  account={acc}
+                  transactions={transactions}
+                  expanded={expanded === acc.id}
+                  onToggle={() => setExpanded(expanded === acc.id ? null : acc.id)}
+                  onEdit={() => openEdit(acc)}
+                  onDelete={() => handleDelete(acc)}
+                />
+              )}
+            </Reveal>
+          ))}
         </div>
       )}
 

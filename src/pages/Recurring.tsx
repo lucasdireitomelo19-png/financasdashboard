@@ -9,6 +9,8 @@ import { formatCurrency, formatDate, todayIso } from '../lib/format'
 import { nextOccurrenceAfter } from '../lib/recurrence'
 import { triggerSaveFeedback } from '../lib/feedback'
 import { AnimatedNumber } from '../components/AnimatedNumber'
+import { TiltCard } from '../components/TiltCard'
+import { Reveal } from '../components/Reveal'
 import type { RecurringTemplate } from '../types/database'
 
 const FREQ_LABELS: Record<string, string> = { weekly: 'Semanal', monthly: 'Mensal', yearly: 'Anual' }
@@ -90,7 +92,7 @@ export function Recurring() {
         Gastos e entradas de valor fixo (aluguel, salário, assinaturas). O app lança automaticamente na data certa.
       </p>
 
-      <div className="grid grid-cols-3 gap-3">
+      <TiltCard className="grid grid-cols-3 gap-3">
         <div className="panel-calm h-full p-3 text-center">
           <p className="font-display text-[10px] uppercase tracking-wider text-slate-500">Entradas fixas / mês (aprox.)</p>
           <p className="mt-0.5 font-display text-sm font-bold text-emerald-400">
@@ -109,7 +111,7 @@ export function Recurring() {
             <AnimatedNumber value={monthlyCompanyTotal} format={formatCurrency} />
           </p>
         </div>
-      </div>
+      </TiltCard>
 
       <TemplateSection title="Entradas recorrentes" items={fixedIncomes} categoryMap={categoryMap} today={today} onEdit={openEdit} onDelete={handleDelete} onToggle={toggleActive} />
       <TemplateSection title="Gastos recorrentes" items={fixedExpenses} categoryMap={categoryMap} today={today} onEdit={openEdit} onDelete={handleDelete} onToggle={toggleActive} />
@@ -148,11 +150,11 @@ function TemplateSection({
         <p className="py-4 text-center text-sm text-slate-500">Nenhuma recorrência cadastrada.</p>
       ) : (
         <ul className="divide-y divide-cyan-500/10">
-          {items.map((t) => {
+          {items.map((t, i) => {
             const cat = t.category_id ? categoryMap.get(t.category_id) : null
             const next = t.active ? nextOccurrenceAfter(t, today) : null
             return (
-              <li key={t.id} className="flex items-center justify-between gap-2 py-2.5">
+              <Reveal key={t.id} index={i} as="li" className="flex items-center justify-between gap-2 py-2.5">
                 <button onClick={() => onEdit(t)} className="flex flex-1 items-center gap-3 text-left">
                   <span className="text-xl">{cat?.icon ?? '🔁'}</span>
                   <div className="min-w-0">
@@ -175,7 +177,7 @@ function TemplateSection({
                     🗑️
                   </button>
                 </div>
-              </li>
+              </Reveal>
             )
           })}
         </ul>

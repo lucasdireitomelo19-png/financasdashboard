@@ -14,6 +14,7 @@ import { currentCreditCardCycle, computeVrBalance, cycleRangeIso } from '../lib/
 import { computeInsights, type Insight } from '../lib/insights'
 import { AnimatedNumber } from '../components/AnimatedNumber'
 import { TiltCard } from '../components/TiltCard'
+import { Reveal } from '../components/Reveal'
 import { QuickAddAgenda } from '../components/QuickAddAgenda'
 import type { Transaction } from '../types/database'
 import { Link } from 'react-router-dom'
@@ -219,28 +220,38 @@ export function Dashboard() {
       <p className="-mt-4 text-center text-[10px] uppercase tracking-wider text-slate-600">Projeção · não é garantia de rentabilidade</p>
 
       <div className="grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-white/5 bg-white/5 sm:grid-cols-4">
-        <TickerCell label="Entradas" value={income} color="text-emerald-400" loading={loading} spark={entradasSeries} sparkColor="#2dffb0" />
-        <TickerCell label="Saídas" value={expense} color="text-rose-400" loading={loading} spark={saidasSeries} sparkColor="#ff4d6a" />
-        <TickerCell
-          label="Saldo do mês"
-          value={balance}
-          color={balance >= 0 ? 'text-emerald-400' : 'text-rose-400'}
-          loading={loading}
-          spark={saldoSeries}
-          sparkColor={balance >= 0 ? '#2dffb0' : '#ff4d6a'}
-        />
-        <TickerCell label="Patrimônio investido" value={totalInvested} color="text-cyan-300" loading={loadingInvestments} />
+        <Reveal index={0}>
+          <TickerCell label="Entradas" value={income} color="text-emerald-400" loading={loading} spark={entradasSeries} sparkColor="#2dffb0" />
+        </Reveal>
+        <Reveal index={1}>
+          <TickerCell label="Saídas" value={expense} color="text-rose-400" loading={loading} spark={saidasSeries} sparkColor="#ff4d6a" />
+        </Reveal>
+        <Reveal index={2}>
+          <TickerCell
+            label="Saldo do mês"
+            value={balance}
+            color={balance >= 0 ? 'text-emerald-400' : 'text-rose-400'}
+            loading={loading}
+            spark={saldoSeries}
+            sparkColor={balance >= 0 ? '#2dffb0' : '#ff4d6a'}
+          />
+        </Reveal>
+        <Reveal index={3}>
+          <TickerCell label="Patrimônio investido" value={totalInvested} color="text-cyan-300" loading={loadingInvestments} />
+        </Reveal>
       </div>
 
       {monthlyCompanyExpenses > 0 && (
-        <Link to="/recorrentes">
-          <div className="panel-calm flex items-center justify-between p-4">
-            <p className="font-display text-[10px] uppercase tracking-wider text-slate-500">🏢 Gastos da empresa / mês (aprox.)</p>
-            <p className="font-display text-sm font-bold text-amber-400">
-              <AnimatedNumber value={monthlyCompanyExpenses} format={formatCurrency} />
-            </p>
-          </div>
-        </Link>
+        <Reveal index={4}>
+          <Link to="/recorrentes">
+            <div className="panel-calm flex items-center justify-between p-4">
+              <p className="font-display text-[10px] uppercase tracking-wider text-slate-500">🏢 Gastos da empresa / mês (aprox.)</p>
+              <p className="font-display text-sm font-bold text-amber-400">
+                <AnimatedNumber value={monthlyCompanyExpenses} format={formatCurrency} />
+              </p>
+            </div>
+          </Link>
+        </Reveal>
       )}
 
       {accountBalances.length > 0 && (
@@ -252,16 +263,18 @@ export function Dashboard() {
             </Link>
           </div>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-            {accountBalances.map(({ account: a, value, label }) => (
-              <div key={a.id} className="panel-calm h-full p-4 text-center">
-                <p className="flex items-center justify-center gap-1.5 font-display text-[10px] uppercase tracking-wider text-slate-500">
-                  <span className="text-sm">{a.icon}</span> {a.name}
-                </p>
-                <p className="mt-1 font-display text-base font-bold" style={{ color: a.color }}>
-                  <AnimatedNumber value={value} format={formatCurrency} />
-                </p>
-                <p className="mt-0.5 text-[10px] text-slate-500">{label}</p>
-              </div>
+            {accountBalances.map(({ account: a, value, label }, i) => (
+              <Reveal key={a.id} index={i}>
+                <div className="panel-calm h-full p-4 text-center">
+                  <p className="flex items-center justify-center gap-1.5 font-display text-[10px] uppercase tracking-wider text-slate-500">
+                    <span className="text-sm">{a.icon}</span> {a.name}
+                  </p>
+                  <p className="mt-1 font-display text-base font-bold" style={{ color: a.color }}>
+                    <AnimatedNumber value={value} format={formatCurrency} />
+                  </p>
+                  <p className="mt-0.5 text-[10px] text-slate-500">{label}</p>
+                </div>
+              </Reveal>
             ))}
           </div>
         </div>
@@ -270,7 +283,7 @@ export function Dashboard() {
       <QuickAddAgenda onCreate={createAgendaEvent} />
 
       {upcomingEvents.length > 0 && (
-        <div className="panel-calm p-4">
+        <Reveal index={5} className="panel-calm p-4">
           <div className="mb-3 flex items-center justify-between">
             <h2 className="font-display text-xs font-semibold uppercase tracking-wider text-cyan-300/70">Próximos compromissos</h2>
             <Link to="/agenda" className="font-display text-[11px] uppercase tracking-wide text-cyan-400 hover:underline">
@@ -295,11 +308,11 @@ export function Dashboard() {
               </li>
             ))}
           </ul>
-        </div>
+        </Reveal>
       )}
 
       {insights.length > 0 && (
-        <div className="panel-calm p-4">
+        <Reveal index={6} className="panel-calm p-4">
           <h2 className="mb-3 font-display text-xs font-semibold uppercase tracking-wider text-cyan-300/70">Insights do mês</h2>
           <div className="space-y-2">
             {insights.map((ins) => {
@@ -317,11 +330,11 @@ export function Dashboard() {
               )
             })}
           </div>
-        </div>
+        </Reveal>
       )}
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <div className="panel-calm p-4">
+        <Reveal index={7} className="panel-calm p-4">
           <h2 className="mb-3 font-display text-xs font-semibold uppercase tracking-wider text-cyan-300/70">Gastos por categoria (mês atual)</h2>
           {expenseByCategory.length === 0 ? (
             <EmptyChart text="Nenhum gasto registrado neste mês ainda." />
@@ -338,9 +351,9 @@ export function Dashboard() {
               </PieChart>
             </ResponsiveContainer>
           )}
-        </div>
+        </Reveal>
 
-        <div className="panel-calm p-4">
+        <Reveal index={8} className="panel-calm p-4">
           <h2 className="mb-3 font-display text-xs font-semibold uppercase tracking-wider text-cyan-300/70">Entradas x Saídas (últimos 6 meses)</h2>
           <ResponsiveContainer width="100%" height={260}>
             <BarChart data={evolution}>
@@ -353,10 +366,10 @@ export function Dashboard() {
               <Bar dataKey="saidas" fill="#ff4d6a" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
-        </div>
+        </Reveal>
       </div>
 
-      <div className="panel-calm p-4">
+      <Reveal index={9} className="panel-calm p-4">
         <div className="mb-3 flex items-center justify-between">
           <h2 className="font-display text-xs font-semibold uppercase tracking-wider text-cyan-300/70">Últimos lançamentos</h2>
           <Link to="/lancamentos" className="font-display text-[11px] uppercase tracking-wide text-cyan-400 hover:underline">
@@ -367,10 +380,10 @@ export function Dashboard() {
           <EmptyChart text="Nenhum lançamento este mês." />
         ) : (
           <ul className="divide-y divide-cyan-500/10">
-            {recent.map((t) => {
+            {recent.map((t, i) => {
               const cat = t.category_id ? categoryMap.get(t.category_id) : null
               return (
-                <li key={t.id} className="flex items-center justify-between py-2.5">
+                <Reveal key={t.id} index={i} as="li" className="flex items-center justify-between py-2.5">
                   <div className="flex items-center gap-3">
                     <span className="text-xl">{cat?.icon ?? '💸'}</span>
                     <div>
@@ -383,12 +396,12 @@ export function Dashboard() {
                   <span className={`text-sm font-semibold ${t.type === 'income' ? 'text-emerald-400' : 'text-rose-400'}`}>
                     {t.type === 'income' ? '+' : '-'} {formatCurrency(Number(t.amount))}
                   </span>
-                </li>
+                </Reveal>
               )
             })}
           </ul>
         )}
-      </div>
+      </Reveal>
     </div>
   )
 }

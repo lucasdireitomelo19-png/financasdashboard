@@ -12,6 +12,7 @@ import { PAYMENT_METHOD_LABELS } from '../lib/constants'
 import { buildInstallmentRows } from '../lib/installments'
 import { triggerSaveFeedback } from '../lib/feedback'
 import { AnimatedNumber } from '../components/AnimatedNumber'
+import { Reveal } from '../components/Reveal'
 import type { Transaction, TransactionType } from '../types/database'
 
 const defaultRange = currentMonthRange()
@@ -238,8 +239,8 @@ export function Transactions() {
           <p className="py-8 text-center text-sm text-slate-500">Nenhum lançamento encontrado com esses filtros.</p>
         ) : (
           <div className="space-y-5">
-            {grouped.map(([date, items]) => (
-              <div key={date}>
+            {grouped.map(([date, items], i) => (
+              <Reveal key={date} index={i}>
                 <p className="mb-2 text-xs font-medium uppercase tracking-wide text-slate-500">
                   {date.split('-').reverse().join('/')}
                 </p>
@@ -289,7 +290,7 @@ export function Transactions() {
                     )
                   })}
                 </ul>
-              </div>
+              </Reveal>
             ))}
           </div>
         )}

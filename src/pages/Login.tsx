@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { ErrorText, FormField, PrimaryButton, TextInput } from '../components/FormField'
 import { ArcReactor } from '../components/ArcReactor'
+import { AuroraBackground } from '../components/AuroraBackground'
+import { TiltCard } from '../components/TiltCard'
 import { isSupabaseConfigured } from '../lib/supabase'
 
 type Mode = 'signin' | 'signup' | 'reset'
@@ -45,8 +47,9 @@ export function Login() {
   }
 
   return (
-    <div className="flex min-h-dvh items-center justify-center px-4">
-      <div className="w-full max-w-sm">
+    <div className="relative flex min-h-dvh items-center justify-center overflow-hidden px-4">
+      <AuroraBackground />
+      <div className="relative z-10 w-full max-w-sm">
         <div className="mb-8 flex flex-col items-center text-center">
           <div className="mb-3">
             <ArcReactor size={52} />
@@ -62,6 +65,7 @@ export function Login() {
           </p>
         )}
 
+        <TiltCard>
         <form onSubmit={handleSubmit} className="hud-panel p-5">
           <ErrorText>{error}</ErrorText>
           {info && <p className="mb-3 rounded-lg border border-cyan-500/30 bg-cyan-500/10 px-3 py-2 text-sm text-cyan-200">{info}</p>}
@@ -104,6 +108,7 @@ export function Login() {
             {mode === 'signup' ? 'Já tem conta? Entrar' : mode === 'reset' ? 'Voltar para o login' : 'Não tem conta? Criar agora'}
           </button>
         </form>
+        </TiltCard>
       </div>
     </div>
   )

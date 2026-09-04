@@ -1,7 +1,9 @@
-import { NavLink, Outlet } from 'react-router-dom'
+import { NavLink, Outlet, useLocation } from 'react-router-dom'
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import { useAuth } from '../context/AuthContext'
 import { ArcReactor } from './ArcReactor'
 import { ParticleField } from './ParticleField'
+import { AuroraBackground } from './AuroraBackground'
 import { NotificationBell } from './NotificationBell'
 import { CommandPalette } from './CommandPalette'
 
@@ -19,9 +21,12 @@ const NAV_ITEMS = [
 
 export function Layout() {
   const { user, signOut } = useAuth()
+  const location = useLocation()
+  const reduceMotion = useReducedMotion()
 
   return (
     <div className="relative mx-auto flex min-h-dvh max-w-6xl flex-col sm:flex-row">
+      <AuroraBackground />
       <ParticleField />
       <CommandPalette />
 
@@ -91,8 +96,24 @@ export function Layout() {
         </div>
       </header>
 
-      <main className="relative z-10 flex-1 overflow-x-hidden px-4 pb-24 pt-4 sm:px-6 sm:pb-8 sm:pt-6">
-        <Outlet />
+      <main className="relative z-10 flex-1 overflow-x-hidden px-4 pb-24 pt-4 sm:px-6 sm:pb-8 sm:pt-6" style={{ perspective: 1200 }}>
+        <AnimatePresence mode="wait">
+          {reduceMotion ? (
+            <div key={location.pathname}>
+              <Outlet />
+            </div>
+          ) : (
+            <motion.div
+              key={location.pathname}
+              initial={{ opacity: 0, y: 18, rotateX: 4 }}
+              animate={{ opacity: 1, y: 0, rotateX: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <Outlet />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </main>
 
       {/* botão flutuante de comando/busca no mobile */}

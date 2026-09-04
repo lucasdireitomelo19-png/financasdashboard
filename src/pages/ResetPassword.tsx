@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { ErrorText, FormField, PrimaryButton, TextInput } from '../components/FormField'
 import { ArcReactor } from '../components/ArcReactor'
+import { AuroraBackground } from '../components/AuroraBackground'
+import { TiltCard } from '../components/TiltCard'
 
 export function ResetPassword() {
   const { updatePassword } = useAuth()
@@ -30,8 +32,9 @@ export function ResetPassword() {
   }
 
   return (
-    <div className="flex min-h-dvh items-center justify-center px-4">
-      <div className="w-full max-w-sm">
+    <div className="relative flex min-h-dvh items-center justify-center overflow-hidden px-4">
+      <AuroraBackground />
+      <div className="relative z-10 w-full max-w-sm">
         <div className="mb-8 flex flex-col items-center text-center">
           <div className="mb-3">
             <ArcReactor size={52} />
@@ -40,6 +43,7 @@ export function ResetPassword() {
           <p className="mt-1 text-sm text-slate-400">Defina uma nova senha para sua conta</p>
         </div>
 
+        <TiltCard>
         <div className="hud-panel p-5">
           {done ? (
             <>
@@ -87,6 +91,7 @@ export function ResetPassword() {
             </form>
           )}
         </div>
+        </TiltCard>
       </div>
     </div>
   )

@@ -9,6 +9,8 @@ import { formatCurrency, formatDate } from '../lib/format'
 import { triggerSaveFeedback } from '../lib/feedback'
 import { INVESTMENT_CATEGORY_COLORS, INVESTMENT_CATEGORY_LABELS, INVESTMENT_MOVEMENT_LABELS } from '../lib/constants'
 import { AnimatedNumber } from '../components/AnimatedNumber'
+import { TiltCard } from '../components/TiltCard'
+import { Reveal } from '../components/Reveal'
 import { Recommendations } from '../components/Recommendations'
 import { SavingsGoals } from '../components/SavingsGoals'
 import type { Investment } from '../types/database'
@@ -151,7 +153,7 @@ export function Investments() {
 
       {tab === 'carteira' && (
         <>
-      <div className="grid grid-cols-3 gap-3">
+      <TiltCard className="grid grid-cols-3 gap-3">
         <MiniStat label="Investido" value={totals.invested} color="text-slate-200" />
         <MiniStat label="Patrimônio atual" value={totals.current} color="text-cyan-300" />
         <MiniStat
@@ -160,7 +162,7 @@ export function Investments() {
           color={totals.gain >= 0 ? 'text-emerald-400' : 'text-rose-400'}
           suffix={totals.invested > 0 ? ` (${totals.gainPct >= 0 ? '+' : ''}${totals.gainPct.toFixed(1)}%)` : ''}
         />
-      </div>
+      </TiltCard>
 
       {allocation.length > 0 && (
         <div className="panel-calm p-4">
@@ -194,11 +196,11 @@ export function Investments() {
             Nenhum investimento cadastrado ainda. Adicione o primeiro para começar a acompanhar sua carteira.
           </div>
         ) : (
-          investments.map((inv) => {
+          investments.map((inv, i) => {
             const isOpen = expanded === inv.id
             const movements = movementsFor(inv.id)
             return (
-              <div key={inv.id} className="panel-calm p-4">
+              <Reveal key={inv.id} index={i} className="panel-calm p-4">
                 <div className="flex items-start justify-between gap-2">
                   <button onClick={() => setExpanded(isOpen ? null : inv.id)} className="flex-1 text-left">
                     <div className="flex items-center gap-2">
@@ -258,7 +260,7 @@ export function Investments() {
                     )}
                   </ul>
                 )}
-              </div>
+              </Reveal>
             )
           })
         )}
