@@ -5,6 +5,7 @@ import { useCategories } from '../hooks/useCategories'
 import { useInvestments } from '../hooks/useInvestments'
 import { usePaymentAccounts } from '../hooks/usePaymentAccounts'
 import { useAgendaEvents } from '../hooks/useAgendaEvents'
+import { useRecurringTemplates } from '../hooks/useRecurringTemplates'
 import { useRecurringSync } from '../hooks/useRecurringSync'
 import { supabase } from '../lib/supabase'
 import { formatCurrency, formatDate, formatMonthLabel, monthsAgoRange, todayIso } from '../lib/format'
@@ -38,6 +39,7 @@ export function Dashboard() {
   const { investments, loading: loadingInvestments } = useInvestments(user?.id)
   const { accounts } = usePaymentAccounts(user?.id)
   const { events, create: createAgendaEvent } = useAgendaEvents(user?.id)
+  const { templates: recurringTemplates } = useRecurringTemplates(user?.id)
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [loading, setLoading] = useState(true)
   const [reloadKey, setReloadKey] = useState(0)
@@ -80,6 +82,10 @@ export function Dashboard() {
 
   const totalInvested = investments.reduce((s, i) => s + i.currentValue, 0)
   const netWorth = totalInvested
+
+  const monthlyCompanyExpenses = recurringTemplates
+    .filter((t) => t.type === 'expense' && t.is_company && t.active)
+    .reduce((s, t) => s + Number(t.amount) * (t.frequency === 'monthly' ? 1 : t.frequency === 'weekly' ? 4.33 : 1 / 12), 0)
 
   const activeAccounts = useMemo(() => accounts.filter((a) => !a.archived), [accounts])
   const accountBalances = useMemo(
@@ -207,6 +213,19 @@ export function Dashboard() {
         <StatCard label="Saldo do mês" value={balance} color={balance >= 0 ? 'text-emerald-400' : 'text-rose-400'} loading={loading} />
         <StatCard label="Patrimônio investido" value={totalInvested} color="text-cyan-300" loading={loadingInvestments} />
       </div>
+
+      {monthlyCompanyExpenses > 0 && (
+        <Link to="/recorrentes">
+          <TiltCard>
+            <div className="hud-panel flex items-center justify-between p-3">
+              <p className="font-display text-[10px] uppercase tracking-wider text-slate-500">🏢 Gastos da empresa / mês (aprox.)</p>
+              <p className="glow-text font-display text-sm font-bold text-amber-400">
+                <AnimatedNumber value={monthlyCompanyExpenses} format={formatCurrency} />
+              </p>
+            </div>
+          </TiltCard>
+        </Link>
+      )}
 
       {accountBalances.length > 0 && (
         <div>
